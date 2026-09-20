@@ -1,0 +1,294 @@
+<title>H-1B Scenario Simulator</title>
+<style>
+:root{
+  --bg:#f5e6c8; --surface:#ede0c8; --surface-2:#e2d3ac;
+  --ink:#1a1a1a; --ink-2:#6b5b47; --ink-3:#8a7a63;
+  --line:#d4c4a0; --line-strong:#b5a37c;
+  --blue:#2a78d6; --blue-soft:#b7d3f6;
+  --rust:#8b2500;
+  color-scheme:light;
+}
+*{box-sizing:border-box;}
+body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,Georgia,serif; margin:0; padding:2rem 1.5rem 4rem;}
+.wrap{max-width:1080px; margin:0 auto;}
+.mono{font-family:"Courier New",Courier,monospace;}
+h1{font-size:22px; font-weight:700; margin:0 0 4px;}
+h2{font-size:14px; font-weight:700; margin:0 0 10px; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em;}
+.kicker{font-family:"Courier New",Courier,monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-2); margin:0 0 2px; font-weight:700;}
+.sub{font-size:14px; color:var(--ink-2); margin:0 0 1.5rem; max-width:680px; line-height:1.55;}
+.navrow{display:flex; gap:6px; margin-bottom:1.5rem;}
+.navrow a{font-family:"Courier New",Courier,monospace; font-weight:700; font-size:13px; padding:8px 16px; border-radius:2px; background:var(--surface-2); color:var(--ink); text-decoration:none;}
+.navrow a.active{background:var(--rust); color:var(--bg);}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem; margin-bottom:1.5rem;}
+.slider-row{display:flex; align-items:center; gap:16px; margin-bottom:4px;}
+.slider-row input[type=range]{flex:1; accent-color:var(--rust);}
+.slider-val{font-weight:700; font-size:16px; min-width:110px; text-align:right; font-variant-numeric:tabular-nums;}
+.hint{font-size:11px; color:var(--ink-3); margin:0;}
+.controls-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
+fieldset{border:1px solid var(--line); border-radius:2px; padding:12px 14px; margin:0;}
+legend{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); padding:0 6px;}
+label.opt{display:flex; align-items:flex-start; gap:8px; font-size:13px; padding:5px 0; cursor:pointer; line-height:1.4;}
+label.opt input{margin-top:3px; accent-color:var(--rust);}
+label.opt .d{color:var(--ink-3); font-size:11.5px;}
+.subpicker{margin-top:8px; padding:10px; background:var(--surface-2); border-radius:2px; display:none;}
+.subpicker.show{display:block;}
+.subpicker label.opt{padding:3px 0;}
+.stats{display:flex; gap:24px; flex-wrap:wrap; margin-top:0;}
+.stat .v{font-family:"Courier New",Courier,monospace; font-size:20px; font-weight:700; font-variant-numeric:tabular-nums;}
+.stat .l{font-size:11px; color:var(--ink-2); text-transform:uppercase; letter-spacing:0.04em;}
+#chart{display:flex; align-items:flex-end; gap:2px; height:280px; border-bottom:2px solid var(--rust); padding-top:20px; position:relative;}
+.bar-col{flex:1; display:flex; flex-direction:column-reverse; align-items:stretch; height:100%; position:relative;}
+.bar-eligible{background:var(--blue-soft); width:100%;}
+.bar-selected{background:var(--blue); width:100%;}
+.axis-labels{display:flex; gap:2px; margin-top:4px;}
+.axis-labels span{flex:1; font-size:9px; color:var(--ink-3); text-align:center; font-family:"Courier New",Courier,monospace;}
+.legend{display:flex; gap:22px; flex-wrap:wrap; margin-top:1rem; padding-top:.75rem; border-top:1px solid var(--line);}
+.legend-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-2);}
+.legend-item .sw{width:11px; height:11px; display:inline-block;}
+footer{margin-top:2rem; padding-top:1.25rem; border-top:1px solid var(--line);}
+footer p{font-size:11.5px; line-height:1.6; color:var(--ink-3); margin:0 0 8px; font-family:"Courier New",Courier,monospace;}
+footer p b{color:var(--ink-2); font-weight:700;}
+</style>
+
+<div class="wrap">
+  <p class="kicker">Forward-looking · not historical data</p>
+  <h1>H-1B scenario simulator</h1>
+  <p class="sub">Start from FY2024's real wage distribution (92,110 filed petitions), then apply hypothetical policy changes and selection rules to see who would get the 85,000 slots. Every number past the FY2024 baseline is a modeled assumption, not observed data — see the footnotes for exactly which.</p>
+
+  <div class="navrow">
+    <a href="index.html">Historical (FY2021&ndash;24)</a>
+    <a href="simulator.html" class="active">Scenario simulator</a>
+  </div>
+
+  <div class="panel">
+    <h2>Pool size</h2>
+    <div class="slider-row">
+      <input type="range" id="entriesSlider" min="300000" max="1200000" step="10000" value="758994">
+      <span class="slider-val" id="entriesVal">758,994</span>
+    </div>
+    <p class="hint">Total lottery entries, scaled proportionally from FY2024's real wage/occupation shape. FY2024 actual = 758,994.</p>
+  </div>
+
+  <div class="panel">
+    <div class="controls-grid">
+      <fieldset id="mechGroup">
+        <legend>Selection mechanism</legend>
+        <label class="opt"><input type="radio" name="mech" value="random" checked> Random lottery (status quo)<br></label>
+        <label class="opt"><input type="radio" name="mech" value="weighted"> Wage-level weighted &mdash; 4&times;/3&times;/2&times;/1&times; odds by quartile level</label>
+        <label class="opt"><input type="radio" name="mech" value="topsalary"> Top salary directly (no randomness)</label>
+        <label class="opt"><input type="radio" name="mech" value="toplevel"> Top wage level directly (fill Level IV first, then III, etc.)</label>
+      </fieldset>
+      <fieldset id="feeGroup">
+        <legend>Fee scenario</legend>
+        <label class="opt"><input type="radio" name="fee" value="none" checked> None</label>
+        <label class="opt"><input type="radio" name="fee" value="100k"> $100K fee on consular applications &mdash; eliminates everyone processing from abroad entirely<span class="d"> (~50% of the pool, per FY2024's real domestic/consular split)</span></label>
+        <label class="opt"><input type="radio" name="fee" value="103k"> $103K fee across everyone &mdash; eliminates everyone below $103K, cuts the lowest earners above $103K</label>
+        <div class="subpicker" id="fee103sub">
+          <div style="font-size:11px; color:var(--ink-2); margin-bottom:4px; font-weight:700;">How much does it shrink demand above $103K? (from the IFP methodology comparison)</div>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.63"> &minus;63% (Borjas 2026)</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.70"> &minus;70% (Ozimek &amp; He 2026)</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.78" checked> &minus;78% (Clemens 2026 / IFP survey)</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.91"> &minus;91% (Proclamation payment case study)</label>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Result</h2>
+    <div class="stats" id="statrow"></div>
+  </div>
+
+  <div class="panel">
+    <div id="chart"></div>
+    <div class="axis-labels" id="axisLabels"></div>
+    <div class="legend">
+      <div class="legend-item"><span class="sw" style="background:var(--blue);"></span>Selected (85,000 slots)</div>
+      <div class="legend-item"><span class="sw" style="background:var(--blue-soft);"></span>Eligible pool, not selected</div>
+    </div>
+  </div>
+
+  <footer>
+    <p><b>Base shape.</b> The underlying distribution is FY2024's real annualized-wage histogram for the 92,110 filed petitions, in $10K bins from $0 to $300K+. The slider scales this shape proportionally &mdash; it does not change its relative wage mix.</p>
+    <p><b>Wage-level quartiles</b> are a proxy, not DOL's real methodology (which weights by occupation and metro area). Levels are fixed at FY2024's own wage quartiles: Level I &lt;$82K, II $82&ndash;98K, III $98&ndash;126K, IV &gt;$126K.</p>
+    <p><b>Weighted and level-based selection</b> are computed as expected-value proportional allocations across bins, not a discrete random draw of individuals &mdash; the chart shows the distribution a weighted lottery would produce on average, not one simulated outcome.</p>
+    <p><b>$100K consular fee</b>: the ~50/50 domestic/consular split is real, computed directly from FY2024's `REQUESTED_ACTION` field (46,190 consular vs 45,797 already-in-the-US change of status) &mdash; assumed to hold across wage and occupation, which is a simplification.</p>
+    <p><b>$103K fee</b>: below-$103K demand assumed to go to zero entirely. Above $103K, the reduction percentage removes entries starting from the lowest earners in that remaining pool first, not proportionally across the whole distribution &mdash; modeling a fee that prices out the marginal, lower-value sponsorships first.</p>
+  </footer>
+</div>
+
+<script>
+const BASE_BINS = [174,50,23,142,673,1990,5441,11413,15673,13939,9290,6681,6363,4872,3908,2862,2241,1773,1137,1011,683,506,318,139,95,182,54,55,26,36];
+const BASE_OVERFLOW = 360;
+const BASE_TOTAL = BASE_BINS.reduce((a,b)=>a+b,0) + BASE_OVERFLOW;
+const BIN_WIDTH = 10000;
+const N_BINS = BASE_BINS.length; // 0..300k
+const ALL_BINS = BASE_BINS.concat([BASE_OVERFLOW]); // last bin = 300k+ overflow, treat as centered ~320k for math
+const BIN_MID = ALL_BINS.map((_,i)=> i < N_BINS ? i*BIN_WIDTH + BIN_WIDTH/2 : 320000);
+
+const LEVEL_CUTOFFS = [82000, 98000, 126000]; // boundaries between I/II, II/III, III/IV
+function levelOf(mid){
+  if(mid < LEVEL_CUTOFFS[0]) return 1;
+  if(mid < LEVEL_CUTOFFS[1]) return 2;
+  if(mid < LEVEL_CUTOFFS[2]) return 3;
+  return 4;
+}
+const LEVEL_WEIGHT = {1:1,2:2,3:3,4:4};
+
+function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+
+function computeEligible(entries){
+  const scale = entries / BASE_TOTAL;
+  let pool = ALL_BINS.map(b=>b*scale);
+
+  const fee = document.querySelector('input[name=fee]:checked').value;
+  if(fee === '100k'){
+    const consularShare = 46190/(46190+45797);
+    pool = pool.map(v=>v*(1-consularShare));
+  } else if(fee === '103k'){
+    // zero out bins fully below 103k; the 100-110k bin (index 10) straddles 103k
+    pool = pool.map((v,i)=>{
+      const lo = i < N_BINS ? i*BIN_WIDTH : 300000;
+      const hi = i < N_BINS ? (i+1)*BIN_WIDTH : Infinity;
+      if(hi <= 103000) return 0;
+      if(lo >= 103000) return v;
+      const fracAbove = (hi-103000)/(hi-lo);
+      return v*fracAbove;
+    });
+    const pct = parseFloat(document.querySelector('input[name=fee103pct]:checked').value);
+    const remainingTotal = pool.reduce((a,b)=>a+b,0);
+    let toRemove = remainingTotal*pct;
+    // remove from lowest bins first (ascending wage order, i.e., low index first)
+    for(let i=0;i<pool.length && toRemove>0;i++){
+      const take = Math.min(pool[i], toRemove);
+      pool[i] -= take;
+      toRemove -= take;
+    }
+  }
+  return pool;
+}
+
+function computeSelected(pool){
+  const total = pool.reduce((a,b)=>a+b,0);
+  const quota = Math.min(85000, total);
+  if(total <= 0) return pool.map(()=>0);
+  const mech = document.querySelector('input[name=mech]:checked').value;
+
+  if(mech === 'random'){
+    const frac = quota/total;
+    return pool.map(v=>v*frac);
+  }
+  if(mech === 'weighted'){
+    const weights = pool.map((v,i)=>LEVEL_WEIGHT[levelOf(BIN_MID[i])]);
+    const weightedTotal = pool.reduce((a,v,i)=>a+v*weights[i],0);
+    return pool.map((v,i)=>{
+      const share = weightedTotal>0 ? (v*weights[i])/weightedTotal : 0;
+      return Math.min(v, share*quota);
+    });
+  }
+  if(mech === 'topsalary' || mech === 'toplevel'){
+    const order = pool.map((v,i)=>i).sort((a,b)=>BIN_MID[b]-BIN_MID[a]); // descending wage
+    let remaining = quota;
+    const out = pool.map(()=>0);
+    if(mech === 'topsalary'){
+      for(const i of order){
+        if(remaining<=0) break;
+        const take = Math.min(pool[i], remaining);
+        out[i] = take;
+        remaining -= take;
+      }
+    } else {
+      for(const lvl of [4,3,2,1]){
+        if(remaining<=0) break;
+        const idxs = order.filter(i=>levelOf(BIN_MID[i])===lvl);
+        const levelTotal = idxs.reduce((a,i)=>a+pool[i],0);
+        if(levelTotal<=remaining){
+          idxs.forEach(i=>out[i]=pool[i]);
+          remaining -= levelTotal;
+        } else {
+          const frac = remaining/levelTotal;
+          idxs.forEach(i=>out[i]=pool[i]*frac);
+          remaining = 0;
+        }
+      }
+    }
+    return out;
+  }
+}
+
+function weightedMedianMean(bins){
+  const total = bins.reduce((a,b)=>a+b,0);
+  if(total<=0) return {median:0, mean:0};
+  const mean = bins.reduce((a,v,i)=>a+v*BIN_MID[i],0)/total;
+  let cum = 0; let median = 0;
+  for(let i=0;i<bins.length;i++){
+    const prev = cum; cum += bins[i];
+    if(cum >= total/2){
+      const lo = i<N_BINS ? i*BIN_WIDTH : 300000;
+      const w = i<N_BINS ? BIN_WIDTH : 100000;
+      const frac = bins[i]>0 ? (total/2-prev)/bins[i] : 0;
+      median = lo + frac*w;
+      break;
+    }
+  }
+  return {median, mean};
+}
+
+function render(){
+  const entries = parseInt(document.getElementById('entriesSlider').value);
+  document.getElementById('entriesVal').textContent = fmt(entries);
+
+  const eligible = computeEligible(entries);
+  const selected = computeSelected(eligible);
+  const eligibleTotal = eligible.reduce((a,b)=>a+b,0);
+  const selectedTotal = selected.reduce((a,b)=>a+b,0);
+  const {median, mean} = weightedMedianMean(selected);
+
+  document.getElementById('statrow').innerHTML = `
+    <div class="stat"><span class="v">${fmt(eligibleTotal)}</span><span class="l">Eligible pool</span></div>
+    <div class="stat"><span class="v">${fmt(selectedTotal)}</span><span class="l">Selected</span></div>
+    <div class="stat"><span class="v">${eligibleTotal>0?(selectedTotal/eligibleTotal*100).toFixed(1):'0.0'}%</span><span class="l">Selection rate</span></div>
+    <div class="stat"><span class="v">$${fmt(median)}</span><span class="l">Median salary, selected</span></div>
+    <div class="stat"><span class="v">$${fmt(mean)}</span><span class="l">Average salary, selected</span></div>
+  `;
+
+  const maxVal = Math.max(...eligible, 1);
+  const chart = document.getElementById('chart');
+  chart.innerHTML = '';
+  for(let i=0;i<eligible.length;i++){
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const elig = document.createElement('div');
+    elig.className = 'bar-eligible';
+    elig.style.height = (eligible[i]/maxVal*100) + '%';
+    const sel = document.createElement('div');
+    sel.className = 'bar-selected';
+    sel.style.height = (selected[i]/maxVal*100) + '%';
+    sel.style.position = 'absolute';
+    sel.style.bottom = '0';
+    sel.style.left = '0';
+    col.style.position = 'relative';
+    col.appendChild(elig);
+    col.appendChild(sel);
+    col.title = (i<N_BINS ? `$${i*10}k–${(i+1)*10}k` : '$300k+') + `: ${fmt(eligible[i])} eligible, ${fmt(selected[i])} selected`;
+    chart.appendChild(col);
+  }
+  const axis = document.getElementById('axisLabels');
+  axis.innerHTML = '';
+  for(let i=0;i<eligible.length;i++){
+    const s = document.createElement('span');
+    s.textContent = (i % 5 === 0) ? '$'+(i*10)+'k' : '';
+    axis.appendChild(s);
+  }
+}
+
+document.getElementById('entriesSlider').addEventListener('input', render);
+document.querySelectorAll('input[name=mech]').forEach(el=>el.addEventListener('change', render));
+document.querySelectorAll('input[name=fee]').forEach(el=>el.addEventListener('change', ()=>{
+  document.getElementById('fee103sub').classList.toggle('show', document.querySelector('input[name=fee]:checked').value === '103k');
+  render();
+}));
+document.querySelectorAll('input[name=fee103pct]').forEach(el=>el.addEventListener('change', render));
+
+render();
+</script>
