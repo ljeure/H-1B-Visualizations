@@ -35,7 +35,7 @@ button.toggle:hover{border-color:var(--rust);}
 button.toggle[aria-pressed="true"] .switch{background:var(--rust);}
 button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); background:#fff;}
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem;}
-.chart-grid{display:grid; grid-template-columns:104px repeat(4,1fr); column-gap:10px; row-gap:2px;}
+.chart-grid{display:grid; grid-template-columns:104px repeat(3,1fr); column-gap:10px; row-gap:2px;}
 .corner{font-size:11px; color:var(--ink-3);}
 .colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust);}
 .rowlabel{font-family:"Courier New",Courier,monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums; font-weight:700;}
@@ -65,7 +65,7 @@ footer p b{color:var(--ink-2); font-weight:700;}
 <div class="wrap">
   <p class="kicker">USCIS FOIA registration &amp; petition data · TRK #13139</p>
   <h1>H-1B lottery explorer</h1>
-  <p class="sub">Every dot is people, not a share. Solid = selected and a petition was actually filed. Faint = selected but no petition ever showed up in the data. Outline = entered the lottery and wasn't picked. Columns group occupation, rows group annualized wage.</p>
+  <p class="sub">Every dot is people, not a share. Solid = actually filed a petition (real data). Outline = submitted into the lottery, no filing found for them (estimated). Columns group occupation, rows group annualized wage.</p>
 
   <div class="tabbar" id="tabbar"></div>
 
@@ -80,17 +80,16 @@ footer p b{color:var(--ink-2); font-weight:700;}
   <div class="panel">
     <div class="chart-grid" id="chartGrid"></div>
     <div class="legend">
-      <div class="legend-item"><span class="dot solid-n"></span>Selected &amp; filed (real)</div>
-      <div class="legend-item"><span class="dot partial"></span>Selected, no filing found (estimated)</div>
-      <div class="legend-item"><span class="dot hollow"></span>Not selected (estimated)</div>
+      <div class="legend-item"><span class="dot solid-n"></span>Filed a petition (real)</div>
+      <div class="legend-item"><span class="dot hollow"></span>No filing found (estimated)</div>
       <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
-      <div class="legend-item mono">1 dot ≈ 3,000 people</div>
+      <div class="legend-item mono">1 dot ≈ 500 people</div>
     </div>
   </div>
 
   <div class="map-section panel">
     <div class="map-head">
-      <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">— all selected &amp; filed petitions</span></div>
+      <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">— all filed petitions</span></div>
       <div class="mono" style="font-size:11px; color:var(--ink-3);">n = <span id="mapN"></span></div>
     </div>
     <div id="mapwrap">
@@ -100,8 +99,8 @@ footer p b{color:var(--ink-2); font-weight:700;}
   </div>
 
   <footer>
-    <p><b>What's real vs. estimated.</b> USCIS registration data has a true selected/not-selected flag for every registration in every year, but wage, occupation, worksite and dependent-employer status only exist for registrations that actually resulted in a filed I-129 petition — roughly half of everyone truly selected. Solid dots are that real, observed population; see the stat row above for each year's exact split.</p>
-    <p><b>Estimation method.</b> Faint dots assume selected-but-unfiled people share the same wage/occupation shape as observed filers, scaled so selected totals match the year's real selected count. Outline dots extend that same assumption to the full entrant pool, using the year's realized selection rate — reasonable since none of FY2021–24 used a wage-weighted lottery (that starts FY2027), so wage and occupation shouldn't have affected selection odds.</p>
+    <p><b>What's real vs. estimated.</b> Wage, occupation, worksite and dependent-employer status only exist for registrations that actually resulted in a filed I-129 petition — solid dots are that real, observed population. Everyone else who was submitted into the lottery (selected or not, we can't tell which without a filing) has no wage/occupation data at all, so outline dots estimate that remainder assuming it shares the same wage/occupation shape as the observed filers, scaled to match the year's real total submission count.</p>
+    <p><b>Median and average salary</b> are computed only from the real filed population (no estimation), after excluding roughly 0.3–0.5% of records with implausible wage values (under $10K or over $1M/year, almost certainly data-entry errors) from the average specifically — the median is unaffected either way.</p>
     <p><b>FY2021 and FY2022 are disabled</b> — this FOIA release captured occupation, industry, worksite and dependent-employer status for those years' filed petitions, but never populated the wage field, so the grid's y-axis has nothing to plot. Would need a different source (e.g. DOL LCA data) to fill that gap.</p>
     <p><b>Occupation categories</b> are USCIS's own I-129 job-code groupings (not BLS/SOC). <b>H-1B dependent</b> is the employer's self-attested status on the petition (S1Q1A) — a legal ratio test, not a direct "staffing/outsourcing" label. Map shows real worksite states for the filed subset only, not extrapolated.</p>
     <p>Source: <span class="mono">github.com/BloombergGraphics/2024-h1b-immigration-data</span>, USCIS FOIA TRK #13139.</p>
@@ -111,12 +110,11 @@ footer p b{color:var(--ink-2); font-weight:700;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const UNIT = 3000;
-const OCC_ORDER = ['Computer-Related','Math & Physical Sciences','Architecture/Engineering/Surveying','Other'];
+const UNIT = 500;
+const OCC_ORDER = ['Computer-Related','Math, Science & Engineering','Other'];
 const OCC_LABEL = {
   'Computer-Related':'Computer-related',
-  'Math & Physical Sciences':'Math &amp; physical science',
-  'Architecture/Engineering/Surveying':'Architecture / engineering / surveying',
+  'Math, Science & Engineering':'Math, physical science &amp; engineering',
   'Other':'Other'
 };
 const WAGE_ORDER = ['200+','150-200','100-150','50-100','0-50'];
@@ -125,35 +123,28 @@ const WAGE_LABEL = {'200+':'$200k+','150-200':'$150–200k','100-150':'$100–15
 const YEARS = {
   '2024': {
     enabled: true,
-    totals: { entries: 758994, selected: 188364, filed: 92110, rate: 0.248 },
+    totals: { entries: 758994, filed: 92110, medianWage: 98301, meanWage: 106734 },
     cells: {
       'Computer-Related': {
-        '0-50':    {filed:153,   snf:160,   ns:948,    depY:60,    depN:93},
-        '50-100':  {filed:33137, snf:34628, ns:205287, depY:18056, depN:15081},
-        '100-150': {filed:22124, snf:23119, ns:137061, depY:6760,  depN:15364},
-        '150-200': {filed:5788,  snf:6048,  ns:35858,  depY:721,   depN:5067},
-        '200+':    {filed:1165,  snf:1217,  ns:7217,   depY:268,   depN:897}
+        '0-50':    {filed:153,   hollow:1108,   depY:60,    depN:93},
+        '50-100':  {filed:33137, hollow:239915, depY:18056, depN:15081},
+        '100-150': {filed:22124, hollow:160180, depY:6760,  depN:15364},
+        '150-200': {filed:5788,  hollow:41906,  depY:721,   depN:5067},
+        '200+':    {filed:1165,  hollow:8434,   depY:268,   depN:897}
       },
-      'Architecture/Engineering/Surveying': {
-        '0-50':    {filed:77,   snf:80,   ns:477,   depY:4,   depN:73},
-        '50-100':  {filed:5753, snf:6012, ns:35640, depY:528, depN:5225},
-        '100-150': {filed:3719, snf:3886, ns:23040, depY:385, depN:3334},
-        '150-200': {filed:764,  snf:798,  ns:4733,  depY:136, depN:628},
-        '200+':    {filed:151,  snf:158,  ns:935,   depY:28,  depN:123}
-      },
-      'Math & Physical Sciences': {
-        '0-50':    {filed:26,   snf:27,   ns:161,  depY:1,  depN:25},
-        '50-100':  {filed:1338, snf:1398, ns:8289, depY:142,depN:1196},
-        '100-150': {filed:1261, snf:1318, ns:7812, depY:72, depN:1189},
-        '150-200': {filed:388,  snf:405,  ns:2404, depY:17, depN:371},
-        '200+':    {filed:110,  snf:115,  ns:682,  depY:8,  depN:102}
+      'Math, Science & Engineering': {
+        '0-50':    {filed:103,  hollow:745,   depY:5,   depN:98},
+        '50-100':  {filed:7091, hollow:51339, depY:670, depN:6421},
+        '100-150': {filed:4980, hollow:36056, depY:457, depN:4523},
+        '150-200': {filed:1152, hollow:8340,  depY:153, depN:999},
+        '200+':    {filed:261,  hollow:1890,  depY:36,  depN:225}
       },
       'Other': {
-        '0-50':    {filed:806,  snf:842,  ns:4994,  depY:11,  depN:795},
-        '50-100':  {filed:8228, snf:8598, ns:50973, depY:634, depN:7594},
-        '100-150': {filed:4010, snf:4190, ns:24843, depY:152, depN:3858},
-        '150-200': {filed:2084, snf:2178, ns:12910, depY:47,  depN:2037},
-        '200+':    {filed:1028, snf:1074, ns:6369,  depY:20,  depN:1008}
+        '0-50':    {filed:806,  hollow:5836,  depY:11,  depN:795},
+        '50-100':  {filed:8228, hollow:59571, depY:634, depN:7594},
+        '100-150': {filed:4010, hollow:29033, depY:152, depN:3858},
+        '150-200': {filed:2084, hollow:15088, depY:47,  depN:2037},
+        '200+':    {filed:1028, hollow:7443,  depY:20,  depN:1008}
       }
     },
     stateAll: {"NY":6830,"CA":15756,"VA":3236,"TX":17907,"IN":724,"NJ":9605,"FL":2493,"IL":4337,"WA":5339,"MA":3187,"MO":586,"CT":672,"AZ":1138,"DC":311,"NV":204,"NC":2535,"MI":2405,"LA":312,"AR":324,"PA":1734,"OR":648,"GA":3480,"MD":1617,"DE":410,"OH":1391,"MN":660,"ID":149,"NH":169,"CO":716,"NM":118,"UT":435,"NE":128,"AL":140,"WI":313,"TN":552,"SC":413,"RI":68,"WV":21,"HI":18,"IA":186,"KS":223,"OK":79,"WY":61,"KY":150,"MT":27,"SD":34,"ND":32,"MS":27,"VT":19,"AK":13,"ME":57},
@@ -161,35 +152,28 @@ const YEARS = {
   },
   '2023': {
     enabled: true,
-    totals: { entries: 474421, selected: 127563, filed: 94000, rate: 0.2689 },
+    totals: { entries: 474421, filed: 94000, medianWage: 93600, meanWage: 101262 },
     cells: {
       'Computer-Related': {
-        '0-50':    {filed:279,   snf:100,   ns:1029,   depY:105,   depN:174},
-        '50-100':  {filed:40189, snf:14350, ns:148296, depY:23062, depN:17127},
-        '100-150': {filed:19499, snf:6962,  ns:71951,  depY:6096,  depN:13403},
-        '150-200': {filed:4343,  snf:1551,  ns:16025,  depY:769,   depN:3574},
-        '200+':    {filed:789,   snf:282,   ns:2911,   depY:213,   depN:576}
+        '0-50':    {filed:279,   hollow:1129,   depY:105,   depN:174},
+        '50-100':  {filed:40189, hollow:162646, depY:23062, depN:17127},
+        '100-150': {filed:19499, hollow:78913,  depY:6096,  depN:13403},
+        '150-200': {filed:4343,  hollow:17576,  depY:769,   depN:3574},
+        '200+':    {filed:789,   hollow:3193,   depY:213,   depN:576}
       },
-      'Architecture/Engineering/Surveying': {
-        '0-50':    {filed:118,  snf:42,   ns:436,   depY:14,  depN:104},
-        '50-100':  {filed:6135, snf:2191, ns:22638, depY:766, depN:5369},
-        '100-150': {filed:3091, snf:1104, ns:11405, depY:399, depN:2692},
-        '150-200': {filed:490,  snf:175,  ns:1808,  depY:91,  depN:399},
-        '200+':    {filed:87,   snf:31,   ns:321,   depY:17,  depN:70}
-      },
-      'Math & Physical Sciences': {
-        '0-50':    {filed:32,   snf:11,  ns:119,  depY:0,  depN:32},
-        '50-100':  {filed:1541, snf:550, ns:5686, depY:177,depN:1364},
-        '100-150': {filed:1293, snf:462, ns:4771, depY:107,depN:1186},
-        '150-200': {filed:369,  snf:132, ns:1361, depY:33, depN:336},
-        '200+':    {filed:72,   snf:26,  ns:265,  depY:4,  depN:68}
+      'Math, Science & Engineering': {
+        '0-50':    {filed:150,  hollow:608,   depY:14,  depN:136},
+        '50-100':  {filed:7676, hollow:31065, depY:943, depN:6733},
+        '100-150': {filed:4384, hollow:17742, depY:506, depN:3878},
+        '150-200': {filed:859,  hollow:3476,  depY:124, depN:735},
+        '200+':    {filed:159,  hollow:643,   depY:21,  depN:138}
       },
       'Other': {
-        '0-50':    {filed:886,  snf:316,  ns:3270,  depY:22,  depN:864},
-        '50-100':  {filed:8567, snf:3059, ns:31612, depY:1025,depN:7542},
-        '100-150': {filed:3744, snf:1337, ns:13815, depY:254, depN:3490},
-        '150-200': {filed:1556, snf:556,  ns:5741,  depY:41,  depN:1515},
-        '200+':    {filed:920,  snf:328,  ns:3395,  depY:20,  depN:900}
+        '0-50':    {filed:886,  hollow:3586,  depY:22,  depN:864},
+        '50-100':  {filed:8567, hollow:34671, depY:1025,depN:7542},
+        '100-150': {filed:3744, hollow:15152, depY:254, depN:3490},
+        '150-200': {filed:1556, hollow:6297,  depY:41,  depN:1515},
+        '200+':    {filed:920,  hollow:3723,  depY:20,  depN:900}
       }
     },
     stateAll: {"NJ":9475,"GA":3533,"IL":4668,"MI":2814,"MA":3293,"CA":16487,"TX":16825,"WA":5147,"MD":3109,"VA":3114,"ID":126,"DE":435,"NY":6149,"PA":1900,"CT":756,"OH":1430,"NC":2734,"SC":487,"FL":2459,"TN":593,"UT":390,"AZ":1142,"CO":656,"IN":727,"OR":732,"NV":160,"AR":328,"MO":568,"IA":237,"MS":49,"WI":408,"MN":666,"DC":255,"LA":296,"KY":169,"NE":248,"ND":38,"MT":77,"OK":188,"WY":46,"NH":214,"KS":276,"AL":138,"SD":25,"NM":98,"HI":23,"RI":130,"ME":23,"AK":6,"VT":17,"WV":20},
@@ -225,10 +209,11 @@ function renderStats(){
   const t = YEARS[currentYear].totals;
   const row = document.getElementById('statrow');
   row.innerHTML = `
-    <div class="stat"><span class="v">${fmt(t.entries)}</span><span class="l">Total entries</span></div>
-    <div class="stat"><span class="v">${fmt(t.selected)}</span><span class="l">Selected</span></div>
-    <div class="stat"><span class="v">${fmt(t.filed)}</span><span class="l">Selected &amp; filed (real data)</span></div>
-    <div class="stat"><span class="v">${(t.rate*100).toFixed(1)}%</span><span class="l">Selection rate</span></div>
+    <div class="stat"><span class="v">${fmt(t.entries)}</span><span class="l">Total submissions</span></div>
+    <div class="stat"><span class="v">${fmt(t.filed)}</span><span class="l">Filed a petition (real data)</span></div>
+    <div class="stat"><span class="v">${(t.filed/t.entries*100).toFixed(1)}%</span><span class="l">Filing rate</span></div>
+    <div class="stat"><span class="v">$${fmt(t.medianWage)}</span><span class="l">Median salary, filed</span></div>
+    <div class="stat"><span class="v">$${fmt(t.meanWage)}</span><span class="l">Average salary, filed</span></div>
   `;
 }
 
@@ -265,8 +250,7 @@ function renderChart(){
       dotsWrap.className = 'dots';
       const depYDots = dotsFor(c.depY);
       const depNDots = dotsFor(c.depN);
-      const partialDots = dotsFor(c.snf);
-      const hollowDots = dotsFor(c.ns);
+      const hollowDots = dotsFor(c.hollow);
       let html = '';
       if(depOn){
         html += dotGroupHTML(depYDots, 'solid-y', 'H-1B dependent employer');
@@ -274,16 +258,9 @@ function renderChart(){
       } else {
         html += dotGroupHTML(depYDots+depNDots, 'solid-n');
       }
-      html += dotGroupHTML(partialDots, 'partial');
       html += dotGroupHTML(hollowDots, 'hollow');
       dotsWrap.innerHTML = html;
       cell.appendChild(dotsWrap);
-      if(depYDots+depNDots+partialDots+hollowDots === 0 && (c.filed+c.snf+c.ns) > 0){
-        const tag = document.createElement('span');
-        tag.className = 'tinytag';
-        tag.textContent = '<1 dot';
-        cell.appendChild(tag);
-      }
       grid.appendChild(cell);
     });
   });
@@ -334,7 +311,7 @@ function updateMapColors(){
     const v = postal ? (src[postal]||0) : 0;
     return v ? color(v) : emptyFill;
   });
-  document.getElementById('mapModeLabel').innerHTML = depOn ? '— H-1B dependent employers only' : '— all selected &amp; filed petitions';
+  document.getElementById('mapModeLabel').innerHTML = depOn ? '— H-1B dependent employers only' : '— all filed petitions';
   document.getElementById('mapN').textContent = fmt(Object.values(src).reduce((a,b)=>a+b,0));
 }
 
