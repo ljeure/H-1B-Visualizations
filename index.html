@@ -1,92 +1,65 @@
 <title>H-1B Lottery Explorer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f1efe6; --surface:#faf9f3; --surface-2:#eeece0;
-  --ink:#211f18; --ink-2:#5c594c; --ink-3:#8b8776;
-  --line:#d9d5c4; --line-strong:#c1bca6;
+  --bg:#f5e6c8; --surface:#ede0c8; --surface-2:#e2d3ac;
+  --ink:#1a1a1a; --ink-2:#6b5b47; --ink-3:#8a7a63;
+  --line:#d4c4a0; --line-strong:#b5a37c;
   --blue:#2a78d6; --blue-soft:#b5d4f4; --blue-ink:#0c447c;
-  --amber:#eb6834; --amber-soft:#f5c4b3; --amber-ink:#7a2f14;
-  --hollow-border:#a8a493;
-  --chart-surface:#faf9f3;
-  --tab-active:#211f18; --tab-active-ink:#f1efe6;
+  --rust:#8b2500; --rust-soft:#d8b090; --rust-ink:#8b2500;
+  --hollow-border:#a8967a;
+  --chart-surface:#ede0c8;
+  --tab-active:#8b2500; --tab-active-ink:#f5e6c8;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#17181a; --surface:#1e2023; --surface-2:#26282b;
-    --ink:#f0efe9; --ink-2:#b8b6ab; --ink-3:#84827a;
-    --line:#34363a; --line-strong:#45474c;
-    --blue:#3987e5; --blue-soft:#184f95; --blue-ink:#cde2fb;
-    --amber:#d95926; --amber-soft:#7a2f14; --amber-ink:#f5c4b3;
-    --hollow-border:#5a5c60;
-    --chart-surface:#1e2023;
-    --tab-active:#f0efe9; --tab-active-ink:#17181a;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#17181a; --surface:#1e2023; --surface-2:#26282b;
-  --ink:#f0efe9; --ink-2:#b8b6ab; --ink-3:#84827a;
-  --line:#34363a; --line-strong:#45474c;
-  --blue:#3987e5; --blue-soft:#184f95; --blue-ink:#cde2fb;
-  --amber:#d95926; --amber-soft:#7a2f14; --amber-ink:#f5c4b3;
-  --hollow-border:#5a5c60;
-  --chart-surface:#1e2023;
-  --tab-active:#f0efe9; --tab-active-ink:#17181a;
-  color-scheme:dark;
-}
 *{box-sizing:border-box;}
-body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif; margin:0; padding:2rem 1.5rem 4rem;}
+body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,Georgia,serif; margin:0; padding:2rem 1.5rem 4rem;}
 .wrap{max-width:1080px; margin:0 auto;}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
-h1{font-size:22px; font-weight:600; margin:0 0 4px; letter-spacing:-0.01em;}
-.kicker{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); margin:0 0 2px;}
+.mono{font-family:"Courier New",Courier,Georgia,serif;}
+h1{font-size:22px; font-weight:700; margin:0 0 4px; letter-spacing:0;}
+.kicker{font-family:"Courier New",Courier,monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-2); margin:0 0 2px; font-weight:700;}
 .sub{font-size:14px; color:var(--ink-2); margin:0 0 1.75rem; max-width:640px; line-height:1.55;}
-.tabbar{display:flex; align-items:flex-end; gap:2px; border-bottom:1.5px solid var(--line-strong); margin-bottom:1.25rem;}
-.tab{font-family:"IBM Plex Mono",monospace; font-size:13px; padding:8px 16px; border:1.5px solid var(--line-strong); border-bottom:none; border-radius:6px 6px 0 0; background:var(--surface-2); color:var(--ink-3); cursor:not-allowed;}
+.tabbar{display:flex; align-items:center; gap:6px; margin-bottom:1.25rem; flex-wrap:wrap;}
+.tab{font-family:"Courier New",Courier,monospace; font-weight:700; font-size:13px; padding:8px 16px; border:none; border-radius:2px; background:var(--surface-2); color:var(--ink-2); cursor:not-allowed;}
 .tab[data-active="true"]{background:var(--tab-active); color:var(--tab-active-ink); cursor:default;}
 .tab[data-enabled="true"]:not([data-active="true"]){color:var(--ink); cursor:pointer;}
-.tab[data-enabled="true"]:not([data-active="true"]):hover{background:var(--line);}
+.tab[data-enabled="true"]:not([data-active="true"]):hover{background:var(--line-strong);}
 .controls{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;}
 .stats{display:flex; gap:20px; flex-wrap:wrap;}
 .stat{display:flex; flex-direction:column; gap:2px;}
-.stat .v{font-family:"IBM Plex Mono",monospace; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums;}
-.stat .l{font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em;}
-button.toggle{font-family:"IBM Plex Sans",sans-serif; font-size:13px; font-weight:500; display:flex; align-items:center; gap:9px; background:var(--surface); border:1.5px solid var(--line-strong); border-radius:999px; padding:7px 14px 7px 8px; cursor:pointer; color:var(--ink);}
-button.toggle:hover{border-color:var(--ink-3);}
-.switch{width:30px; height:17px; border-radius:99px; background:var(--line-strong); position:relative; transition:background .15s; flex:none;}
-.switch i{position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:var(--surface); transition:transform .15s;}
-button.toggle[aria-pressed="true"] .switch{background:var(--amber);}
+.stat .v{font-family:"Courier New",Courier,monospace; font-size:18px; font-weight:700; font-variant-numeric:tabular-nums;}
+.stat .l{font-size:11px; color:var(--ink-2); text-transform:uppercase; letter-spacing:0.06em;}
+button.toggle{font-family:"Courier New",Courier,monospace; font-size:13px; font-weight:700; display:flex; align-items:center; gap:9px; background:var(--surface-2); border:1px solid var(--line-strong); border-radius:2px; padding:7px 14px 7px 8px; cursor:pointer; color:var(--ink);}
+button.toggle:hover{border-color:var(--rust);}
+.switch{width:30px; height:17px; border-radius:2px; background:var(--line-strong); position:relative; transition:background .15s; flex:none;}
+.switch i{position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:1px; background:var(--surface); transition:transform .15s;}
+button.toggle[aria-pressed="true"] .switch{background:var(--rust);}
 button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); background:#fff;}
-.panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:1.5rem;}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem;}
 .chart-grid{display:grid; grid-template-columns:104px repeat(4,1fr); column-gap:10px; row-gap:2px;}
 .corner{font-size:11px; color:var(--ink-3);}
-.colhead{font-size:12px; font-weight:500; text-align:center; padding-bottom:10px; border-bottom:1.5px solid var(--line-strong); margin-bottom:4px; line-height:1.3;}
-.rowlabel{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums;}
-.cell{border-bottom:1px dashed var(--line); padding:8px 4px; min-height:28px; display:flex; align-items:center;}
+.colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust);}
+.rowlabel{font-family:"Courier New",Courier,monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums; font-weight:700;}
+.cell{border-bottom:1px dashed var(--line-strong); padding:8px 4px; min-height:28px; display:flex; align-items:center;}
 .dots{display:flex; flex-wrap:wrap; gap:3px; align-content:center;}
 .dot{width:8px; height:8px; border-radius:50%; flex:none;}
 .dot.solid-n{background:var(--blue);}
-.dot.solid-y{background:var(--amber);}
+.dot.solid-y{background:var(--rust);}
 .dot.partial{background:var(--blue); opacity:0.32; border:1px solid var(--blue);}
 .dot.hollow{background:transparent; border:1px solid var(--hollow-border);}
-.tinytag{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3); align-self:center;}
+.tinytag{font-family:"Courier New",Courier,monospace; font-size:10px; color:var(--ink-3); align-self:center;}
 .tinytag.overflow{margin-left:2px;}
 .legend{display:flex; gap:22px; flex-wrap:wrap; margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line);}
 .legend-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-2);}
 .legend-item .dot{width:9px; height:9px;}
 .map-section{margin-top:1.75rem;}
 .map-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
-.map-title{font-size:14px; font-weight:500;}
+.map-title{font-size:14px; font-weight:700;}
 .map-title .mono{font-size:12px; color:var(--ink-2); font-weight:400;}
 #mapwrap{position:relative;}
-.tooltip{position:absolute; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"IBM Plex Mono",monospace; font-size:11px; padding:5px 8px; border-radius:5px; opacity:0; transition:opacity .1s; white-space:nowrap; z-index:5;}
+.tooltip{position:absolute; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"Courier New",Courier,monospace; font-size:11px; padding:5px 8px; border-radius:2px; opacity:0; transition:opacity .1s; white-space:nowrap; z-index:5;}
 footer{margin-top:2rem; padding-top:1.25rem; border-top:1px solid var(--line);}
-footer p{font-size:11.5px; line-height:1.6; color:var(--ink-3); margin:0 0 8px; font-family:"IBM Plex Mono",monospace;}
-footer p b{color:var(--ink-2); font-weight:500;}
+footer p{font-size:11.5px; line-height:1.6; color:var(--ink-3); margin:0 0 8px; font-family:"Courier New",Courier,monospace;}
+footer p b{color:var(--ink-2); font-weight:700;}
 </style>
 
 <div class="wrap">
@@ -353,11 +326,9 @@ function updateMapColors(){
   const data = YEARS[currentYear];
   const src = depOn ? data.stateDep : data.stateAll;
   const max = Math.max(...Object.values(src));
-  const isDark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
   const rampLight = ['#e6f1fb','#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#1c5cab'];
-  const rampDark = ['#0d366b','#104281','#184f95','#1c5cab','#256abf','#2a78d6','#3987e5','#5598e7','#6da7ec','#86b6ef'];
-  const color = d3.scaleQuantize([0, max], isDark ? rampDark : rampLight);
-  const emptyFill = isDark ? '#2c2c2a' : '#e1e0d9';
+  const color = d3.scaleQuantize([0, max], rampLight);
+  const emptyFill = '#d4c4a0';
   d3.selectAll('.state-path').attr('fill', d=>{
     const postal = Object.keys(FIPS_NAME).find(k=>FIPS_NAME[k]===d.properties.name);
     const v = postal ? (src[postal]||0) : 0;
