@@ -57,6 +57,7 @@ button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); backgro
 .map-title .mono{font-size:12px; color:var(--ink-2); font-weight:400;}
 #mapwrap{position:relative;}
 .tooltip{position:absolute; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"Courier New",Courier,monospace; font-size:11px; padding:5px 8px; border-radius:2px; opacity:0; transition:opacity .1s; white-space:nowrap; z-index:5;}
+.headtip{position:fixed; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"Courier New",Courier,monospace; font-size:11.5px; line-height:1.5; padding:8px 11px; border-radius:2px; opacity:0; transition:opacity .1s; z-index:50; max-width:280px; white-space:normal;}
 footer{margin-top:2rem; padding-top:1.25rem; border-top:1px solid var(--line);}
 footer p{font-size:11.5px; line-height:1.6; color:var(--ink-3); margin:0 0 8px; font-family:"Courier New",Courier,monospace;}
 footer p b{color:var(--ink-2); font-weight:700;}
@@ -85,8 +86,8 @@ footer p b{color:var(--ink-2); font-weight:700;}
   <div class="panel">
     <div class="chart-grid" id="chartGrid"></div>
     <div class="legend">
-      <div class="legend-item"><span class="dot solid-n"></span>Filed a petition (real)</div>
       <div class="legend-item"><span class="dot hollow"></span>No filing found (estimated)</div>
+      <div class="legend-item"><span class="dot solid-n"></span>Filed a petition (real)</div>
       <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
       <div class="legend-item mono">1 dot ≈ 500 people</div>
     </div>
@@ -208,6 +209,27 @@ function shuffle(arr){
   return arr;
 }
 
+let headtipEl = null;
+function attachTooltip(el, text){
+  if(!headtipEl){
+    headtipEl = document.createElement('div');
+    headtipEl.className = 'headtip';
+    document.body.appendChild(headtipEl);
+  }
+  el.addEventListener('mouseenter', ()=>{
+    headtipEl.textContent = text;
+    headtipEl.style.opacity = '1';
+    const r = el.getBoundingClientRect();
+    const tipWidth = 280;
+    let left = r.left + r.width/2 - tipWidth/2;
+    if(left + tipWidth > window.innerWidth - 12) left = window.innerWidth - tipWidth - 12;
+    if(left < 12) left = 12;
+    headtipEl.style.left = left + 'px';
+    headtipEl.style.top = (r.bottom + 8) + 'px';
+  });
+  el.addEventListener('mouseleave', ()=>{ headtipEl.style.opacity = '0'; });
+}
+
 function renderTabs(){
   const bar = document.getElementById('tabbar');
   bar.innerHTML = '';
@@ -253,8 +275,8 @@ function renderChart(){
     const h = document.createElement('div');
     h.className = 'colhead';
     h.innerHTML = OCC_LABEL[occ];
-    h.title = OCC_DETAIL[occ];
     h.style.cursor = 'help';
+    attachTooltip(h, OCC_DETAIL[occ]);
     grid.appendChild(h);
   });
   WAGE_ORDER.forEach(wb=>{
@@ -282,9 +304,7 @@ function renderChart(){
       shuffle(items);
       dotsWrap.innerHTML = items.map(it=>{
         const t = it.title ? ` title="${it.title}"` : '';
-        const jx = (Math.random()*6-3).toFixed(1);
-        const jy = (Math.random()*6-3).toFixed(1);
-        return `<span class="dot ${it.cls}"${t} style="transform:translate(${jx}px,${jy}px)"></span>`;
+        return `<span class="dot ${it.cls}"${t}></span>`;
       }).join('');
       cell.appendChild(dotsWrap);
       grid.appendChild(cell);

@@ -11,7 +11,12 @@
 }
 *{box-sizing:border-box;}
 body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,Georgia,serif; margin:0; padding:2rem 1.5rem 4rem;}
-.wrap{max-width:1080px; margin:0 auto;}
+.wrap{max-width:1200px; margin:0 auto;}
+.layout{display:grid; grid-template-columns:300px 1fr; gap:1.5rem; align-items:start;}
+.sidebar{display:flex; flex-direction:column; gap:1.5rem; position:sticky; top:1.5rem;}
+.sidebar .panel{margin-bottom:0;}
+.split-row{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
+@media (max-width:860px){ .layout{grid-template-columns:1fr;} .split-row{grid-template-columns:1fr;} .sidebar{position:static;} }
 .mono{font-family:"Courier New",Courier,monospace;}
 h1{font-size:22px; font-weight:700; margin:0 0 4px;}
 h2{font-size:14px; font-weight:700; margin:0 0 10px; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em;}
@@ -68,6 +73,7 @@ button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); backgro
 .map-title .mono{font-size:12px; color:var(--ink-2); font-weight:400;}
 #mapwrap{position:relative;}
 .tooltip{position:absolute; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"Courier New",Courier,monospace; font-size:11px; padding:5px 8px; border-radius:2px; opacity:0; transition:opacity .1s; white-space:nowrap; z-index:5;}
+.headtip{position:fixed; pointer-events:none; background:var(--ink); color:var(--bg); font-family:"Courier New",Courier,monospace; font-size:11.5px; line-height:1.5; padding:8px 11px; border-radius:2px; opacity:0; transition:opacity .1s; z-index:50; max-width:280px; white-space:normal;}
 footer{margin-top:2rem; padding-top:1.25rem; border-top:1px solid var(--line);}
 footer p{font-size:11.5px; line-height:1.6; color:var(--ink-3); margin:0 0 8px; font-family:"Courier New",Courier,monospace;}
 footer p b{color:var(--ink-2); font-weight:700;}
@@ -83,25 +89,26 @@ footer p b{color:var(--ink-2); font-weight:700;}
     <a href="simulator.html" class="active">Scenario simulator</a>
   </div>
 
-  <div class="panel">
-    <h2>Pool size</h2>
-    <div class="slider-row">
-      <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
-      <span class="slider-val" id="entriesVal">343,981</span>
-    </div>
-    <p class="hint">Total lottery entries, scaled proportionally from FY2024's real wage/occupation/dependent shape. Default = FY2026's actual 343,981 &mdash; the last cap season before the consular fee, the $100K/$103K fee proposals, and wage-weighting all took effect.</p>
-  </div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Pool size</h2>
+        <div class="slider-row">
+          <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
+          <span class="slider-val" id="entriesVal">343,981</span>
+        </div>
+        <p class="hint">Total lottery entries, scaled proportionally from FY2024's real wage/occupation/dependent shape. Default = FY2026's real total, 343,981.</p>
+      </div>
 
-  <div class="panel">
-    <div class="controls-grid">
-      <fieldset id="mechGroup">
+      <fieldset id="mechGroup" class="panel">
         <legend>Selection mechanism</legend>
         <label class="opt"><input type="radio" name="mech" value="random" checked> Random lottery (status quo)</label>
         <label class="opt"><input type="radio" name="mech" value="weighted"> Wage-level weighted &mdash; 4&times;/3&times;/2&times;/1&times; odds by quartile level</label>
         <label class="opt"><input type="radio" name="mech" value="topsalary"> Top salary directly (no randomness)</label>
         <label class="opt"><input type="radio" name="mech" value="toplevel"> Top wage level directly (fill Level IV first, then III, etc.)</label>
       </fieldset>
-      <fieldset id="feeGroup">
+
+      <fieldset id="feeGroup" class="panel">
         <legend>Fee scenario</legend>
         <label class="opt"><input type="radio" name="fee" value="none" checked> None</label>
         <label class="opt"><input type="radio" name="fee" value="100k"> $100K fee on consular applications &mdash; eliminates everyone processing from abroad<span class="d"> (hits H-1B dependent employers hardest &mdash; see footnote)</span></label>
@@ -114,54 +121,58 @@ footer p b{color:var(--ink-2); font-weight:700;}
           <label class="opt"><input type="radio" name="fee103pct" value="0.91"> &minus;91% (Proclamation payment case study)</label>
         </div>
       </fieldset>
-    </div>
-  </div>
+    </aside>
 
-  <div class="panel">
-    <div class="toprow">
-      <h2 style="margin:0;">Result</h2>
-      <button class="toggle" id="depToggle" aria-pressed="false">
-        <span class="switch"><i></i></span>
-        <span>Highlight H-1B dependent employers</span>
-      </button>
-    </div>
-    <div class="stats" id="statrow"></div>
-  </div>
+    <main>
+      <div class="panel">
+        <div class="toprow">
+          <h2 style="margin:0;">Result</h2>
+          <button class="toggle" id="depToggle" aria-pressed="false">
+            <span class="switch"><i></i></span>
+            <span>Highlight H-1B dependent employers</span>
+          </button>
+        </div>
+        <div class="stats" id="statrow"></div>
+      </div>
 
-  <div class="panel">
-    <h2>By occupation &amp; wage</h2>
-    <div class="chart-grid" id="chartGrid"></div>
-    <div class="legend">
-      <div class="legend-item"><span class="dot solid-n"></span>Selected</div>
-      <div class="legend-item"><span class="dot hollow"></span>Eligible, not selected</div>
-      <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
-      <div class="legend-item mono">1 dot &asymp; 500 people</div>
-    </div>
-  </div>
+      <div class="panel">
+        <h2>By occupation &amp; wage</h2>
+        <div class="chart-grid" id="chartGrid"></div>
+        <div class="legend">
+          <div class="legend-item"><span class="dot hollow"></span>Eligible, not selected</div>
+          <div class="legend-item"><span class="dot solid-n"></span>Selected</div>
+          <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
+          <div class="legend-item mono">1 dot &asymp; 500 people</div>
+        </div>
+      </div>
 
-  <div class="panel">
-    <h2>By salary, fine-grained</h2>
-    <div id="barchart"></div>
-    <div class="axis-labels" id="axisLabels"></div>
-    <div class="legend">
-      <div class="legend-item"><span class="sw" style="background:var(--blue);"></span>Selected</div>
-      <div class="legend-item"><span class="sw" style="background:var(--blue-soft);"></span>Eligible, not selected</div>
-    </div>
-  </div>
+      <div class="split-row">
+        <div class="panel">
+          <h2>By salary, fine-grained</h2>
+          <div id="barchart"></div>
+          <div class="axis-labels" id="axisLabels"></div>
+          <div class="legend">
+            <div class="legend-item"><span class="sw" style="background:var(--blue-soft);"></span>Eligible, not selected</div>
+            <div class="legend-item"><span class="sw" style="background:var(--blue);"></span>Selected</div>
+          </div>
+        </div>
 
-  <div class="panel">
-    <div class="map-head">
-      <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">&mdash; selected population</span></div>
-      <div class="mono" style="font-size:11px; color:var(--ink-3);">n = <span id="mapN"></span></div>
-    </div>
-    <div id="mapwrap">
-      <svg id="map" viewBox="0 0 900 560" width="900" height="560" style="width:100%; height:auto; display:block; overflow:visible;"></svg>
-      <div class="tooltip" id="mapTooltip"></div>
-    </div>
+        <div class="panel">
+          <div class="map-head">
+            <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">&mdash; selected population</span></div>
+            <div class="mono" style="font-size:11px; color:var(--ink-3);">n = <span id="mapN"></span></div>
+          </div>
+          <div id="mapwrap">
+            <svg id="map" viewBox="0 0 900 560" width="900" height="560" style="width:100%; height:auto; display:block; overflow:visible;"></svg>
+            <div class="tooltip" id="mapTooltip"></div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
   <footer>
-    <p><b>Base shape.</b> Wage, occupation, and dependent-employer mix all come from FY2024's real filed-petition data (the only year with full microdata) &mdash; scaled to whatever total the slider picks. The default, 343,981, is FY2026's real total instead of FY2024's, since FY2026 was the last cap season before any of these policies took effect &mdash; so the mix is FY2024's, but the baseline size is FY2026's. That's a real seam, not a single clean year of data.</p>
+    <p><b>Base shape.</b> Wage, occupation, and dependent-employer mix all come from FY2024's real filed-petition data (the only year with full microdata) &mdash; scaled to whatever total the slider picks. Default = FY2026's real total, 343,981, rather than FY2024's 758,994.</p>
     <p><b>Wage-level quartiles</b> are a proxy, not DOL's real methodology (which weights by occupation and metro area). Levels are fixed at FY2024's own wage quartiles: Level I &lt;$82K, II $82&ndash;98K, III $98&ndash;126K, IV &gt;$126K.</p>
     <p><b>Weighted and level-based selection</b> are expected-value proportional allocations across the fine wage distribution, not a discrete random draw of individuals.</p>
     <p><b>$100K consular fee &amp; dependent employers.</b> The disproportionate effect is real, not assumed: in FY2024 data, 75.1% of H-1B-dependent employers' filings were consular-track vs. only 39.3% for non-dependent employers (computed directly from the I-129's own processing-type field). This scenario applies those two real rates directly &mdash; dependent employers retain 24.9% of their entries, non-dependent employers retain 60.7% &mdash; rather than a single average cut.</p>
@@ -244,6 +255,28 @@ function fmtMoney(n){
   return '$'+fmt(n);
 }
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+let headtipEl = null;
+function attachTooltip(el, text){
+  if(!headtipEl){
+    headtipEl = document.createElement('div');
+    headtipEl.className = 'headtip';
+    document.body.appendChild(headtipEl);
+  }
+  el.style.cursor = 'help';
+  el.addEventListener('mouseenter', ()=>{
+    headtipEl.textContent = text;
+    headtipEl.style.opacity = '1';
+    const r = el.getBoundingClientRect();
+    const tipWidth = 280;
+    let left = r.left + r.width/2 - tipWidth/2;
+    if(left + tipWidth > window.innerWidth - 12) left = window.innerWidth - tipWidth - 12;
+    if(left < 12) left = 12;
+    headtipEl.style.left = left + 'px';
+    headtipEl.style.top = (r.bottom + 8) + 'px';
+  });
+  el.addEventListener('mouseleave', ()=>{ headtipEl.style.opacity = '0'; });
+}
 
 let depOn = false;
 
@@ -397,10 +430,12 @@ function render(){
   cgrid.appendChild(Object.assign(document.createElement('div'), {className:'corner'}));
   OCC_ORDER.forEach(o=>{
     const h = document.createElement('div');
-    h.className='colhead'; h.innerHTML = OCC_LABEL[o]; h.title = OCC_DETAIL[o];
+    h.className='colhead'; h.innerHTML = OCC_LABEL[o];
+    attachTooltip(h, OCC_DETAIL[o]);
     cgrid.appendChild(h);
   });
   const UNIT = 500;
+  const ordered = (mech === 'topsalary' || mech === 'toplevel');
   WAGE_ORDER.forEach(wb=>{
     const rl = document.createElement('div');
     rl.className='rowlabel'; rl.textContent = WAGE_LABEL[wb];
@@ -409,21 +444,32 @@ function render(){
       const g = grid[o][wb];
       const cell = document.createElement('div'); cell.className='cell';
       const dotsWrap = document.createElement('div'); dotsWrap.className='dots';
+      // total dots depend only on the eligible pool (fee scenario), never on the selection
+      // mechanism — so switching mechanisms never shifts a cell's total dot count, only
+      // how many of those dots are filled vs. hollow.
+      const totalDots = Math.round((g.eligY+g.eligN)/UNIT);
+      const filledDots = Math.min(totalDots, Math.round((g.selY+g.selN)/UNIT));
+      const hollowDots = totalDots - filledDots;
+      const selYDots = Math.min(filledDots, Math.round(g.selY/UNIT));
+      const selNDots = filledDots - selYDots;
       const items = [];
-      const selYDots = Math.round(g.selY/UNIT), selNDots = Math.round(g.selN/UNIT);
-      const hollowDots = Math.round((g.eligY+g.eligN-g.selY-g.selN)/UNIT);
       if(depOn){
         for(let i=0;i<selYDots;i++) items.push({cls:'solid-y', title:'H-1B dependent employer'});
         for(let i=0;i<selNDots;i++) items.push({cls:'solid-n'});
       } else {
-        for(let i=0;i<selYDots+selNDots;i++) items.push({cls:'solid-n'});
+        for(let i=0;i<filledDots;i++) items.push({cls:'solid-n'});
       }
-      for(let i=0;i<hollowDots;i++) items.push({cls:'hollow'});
-      shuffle(items);
-      dotsWrap.innerHTML = items.map(it=>{
+      const hollowItems = []; for(let i=0;i<hollowDots;i++) hollowItems.push({cls:'hollow'});
+      let allItems;
+      if(ordered){
+        // deterministic mechanisms: fill from top-left across, then down — no shuffling
+        allItems = items.concat(hollowItems);
+      } else {
+        allItems = shuffle(items.concat(hollowItems));
+      }
+      dotsWrap.innerHTML = allItems.map(it=>{
         const t = it.title?` title="${it.title}"`:'';
-        const jx=(Math.random()*6-3).toFixed(1), jy=(Math.random()*6-3).toFixed(1);
-        return `<span class="dot ${it.cls}"${t} style="transform:translate(${jx}px,${jy}px)"></span>`;
+        return `<span class="dot ${it.cls}"${t}></span>`;
       }).join('');
       cell.appendChild(dotsWrap);
       cgrid.appendChild(cell);
