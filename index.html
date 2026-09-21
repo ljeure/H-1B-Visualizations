@@ -235,6 +235,26 @@ const FINE_BINS_ENTRIES = FINE_BINS.map(v=>v*FINE_TO_ENTRIES);
 const DEP_CONSULAR_SHARE = 21060/(21060+6977);   // 0.751
 const NONDEP_CONSULAR_SHARE = 25121/(25121+38812); // 0.393
 
+// real per-wage-bin dependent-employer share (summed across occupations from CELLS) — this
+// varies a lot by pay band (7% at the bottom, 40% around $50-100K), which matters because the
+// $100K fee's effect isn't wage-neutral: bands with more dependent employers lose more people.
+const DEP_SHARE_BY_WAGE = {};
+WAGE_ORDER.forEach(wb=>{
+  let depY=0, depN=0;
+  OCC_ORDER.forEach(o=>{ depY += CELLS[o][wb].depY; depN += CELLS[o][wb].depN; });
+  DEP_SHARE_BY_WAGE[wb] = (depY+depN)>0 ? depY/(depY+depN) : 0;
+});
+// same blended retention formula used elsewhere, applied per wage band instead of one flat average
+const RETENTION_100K_BY_WAGE = {};
+WAGE_ORDER.forEach(wb=>{
+  const s = DEP_SHARE_BY_WAGE[wb];
+  RETENTION_100K_BY_WAGE[wb] = s*(1-DEP_CONSULAR_SHARE) + (1-s)*(1-NONDEP_CONSULAR_SHARE);
+});
+function retention100kForFineBin(i){
+  const wb = WAGE_ORDER.find(w=>{ const [a,b]=COARSE_RANGE[w]; return i>=a && i<b; });
+  return RETENTION_100K_BY_WAGE[wb];
+}
+
 const STATE_ALL = {"NY":6830,"CA":15756,"VA":3236,"TX":17907,"IN":724,"NJ":9605,"FL":2493,"IL":4337,"WA":5339,"MA":3187,"MO":586,"CT":672,"AZ":1138,"DC":311,"NV":204,"NC":2535,"MI":2405,"LA":312,"AR":324,"PA":1734,"OR":648,"GA":3480,"MD":1617,"DE":410,"OH":1391,"MN":660,"ID":149,"NH":169,"CO":716,"NM":118,"UT":435,"NE":128,"AL":140,"WI":313,"TN":552,"SC":413,"RI":68,"WV":21,"HI":18,"IA":186,"KS":223,"OK":79,"WY":61,"KY":150,"MT":27,"SD":34,"ND":32,"MS":27,"VT":19,"AK":13,"ME":57};
 const STATE_DEP = {"NY":648,"CA":3208,"IN":192,"NJ":5236,"TX":8426,"MO":143,"VA":1177,"MI":911,"AZ":209,"WA":470,"IL":1320,"MA":443,"FL":538,"NC":593,"MD":960,"AR":96,"GA":1192,"NM":74,"PA":290,"OH":542,"CT":182,"TN":154,"CO":144,"KS":90,"SC":124,"DC":16,"WY":27,"KY":44,"MT":14,"OR":40,"SD":8,"WI":34,"MN":143,"NH":38,"OK":8,"AL":34,"UT":25,"DE":80,"IA":76,"RI":14,"LA":6,"NE":16,"NV":15,"ND":5,"WV":6,"ME":4,"MS":1,"VT":1};
 const STATE_ALL_TOTAL = Object.values(STATE_ALL).reduce((a,b)=>a+b,0);
@@ -279,9 +299,9 @@ let depOn = false;
 function computeFineEligible(scale, fee, fee103pct){
   let fine = FINE_BINS_ENTRIES.map(v=>v*scale);
   if(fee === '100k'){
-    // wage-agnostic overall retention (dependent-specific split applied later at coarse level)
-    const overallRetention = 1 - (0.305*DEP_CONSULAR_SHARE + 0.695*NONDEP_CONSULAR_SHARE); // ~0.498 avg baseline
-    fine = fine.map(v=>v*overallRetention);
+    // retention varies by wage band, because dependent-employer share (who lose 75% of their
+    // filings) varies a lot by pay — not a single flat average across all salaries.
+    fine = fine.map((v,i)=>v*retention100kForFineBin(i));
   } else if(fee === '103k'){
     fine = fine.map((v,i)=>{
       const lo = i<30 ? i*BIN_WIDTH : 300000;
