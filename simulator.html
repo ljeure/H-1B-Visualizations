@@ -220,6 +220,10 @@ const CELLS = {
   }
 };
 const BASE_TOTAL_ENTRIES = OCC_ORDER.reduce((a,o)=>a+WAGE_ORDER.reduce((b,wb)=>b+CELLS[o][wb].filed+CELLS[o][wb].hollow,0),0); // 758994
+// FINE_BINS sums to 92,110 (the filed-only subset) — rescale to the 758,994 total-entries baseline,
+// assuming filed and total-entries share the same wage shape (same assumption used throughout this project)
+const FINE_TO_ENTRIES = BASE_TOTAL_ENTRIES / FINE_TOTAL; // ~8.24
+const FINE_BINS_ENTRIES = FINE_BINS.map(v=>v*FINE_TO_ENTRIES);
 
 // real, from FY2024 REQUESTED_ACTION x S1Q1A cross-tab
 const DEP_CONSULAR_SHARE = 21060/(21060+6977);   // 0.751
@@ -242,7 +246,7 @@ let depOn = false;
 
 // ---------- core model ----------
 function computeFineEligible(scale, fee, fee103pct){
-  let fine = FINE_BINS.map(v=>v*scale);
+  let fine = FINE_BINS_ENTRIES.map(v=>v*scale);
   if(fee === '100k'){
     // wage-agnostic overall retention (dependent-specific split applied later at coarse level)
     const overallRetention = 1 - (0.305*DEP_CONSULAR_SHARE + 0.695*NONDEP_CONSULAR_SHARE); // ~0.498 avg baseline
@@ -337,7 +341,7 @@ function render(){
   WAGE_ORDER.forEach(wb=>{
     const [a,b] = COARSE_RANGE[wb];
     let preFee=0, postFee=0, postSel=0;
-    for(let j=a;j<b;j++){ preFee += FINE_BINS[j]*scale; postFee += fineEligible[j]; postSel += fineSelected[j]; }
+    for(let j=a;j<b;j++){ preFee += FINE_BINS_ENTRIES[j]*scale; postFee += fineEligible[j]; postSel += fineSelected[j]; }
     retentionFrac[wb] = preFee>0 ? postFee/preFee : 0;
     selectionFrac[wb] = postFee>0 ? postSel/postFee : 0;
   });
