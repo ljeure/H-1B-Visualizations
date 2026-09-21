@@ -98,7 +98,7 @@ footer p b{color:var(--ink-2); font-weight:700;}
         <label class="opt"><input type="radio" name="fee" value="100k"> $100K fee on people filing from abroad <span class="d">(implemented in 2026)</span></label>
         <label class="opt"><input type="radio" name="fee" value="103k"> $103K fee on everyone <span class="d">(proposed rule, would start in 2027)</span></label>
         <div class="subpicker" id="fee103sub">
-          <div style="font-size:11px; color:var(--ink-2); margin-bottom:4px; font-weight:700;">How much would this shrink applications above $103K?</div>
+          <div style="font-size:11px; color:var(--ink-2); margin-bottom:4px; font-weight:700;">How much would this cut total applications?</div>
           <label class="opt"><input type="radio" name="fee103pct" value="0.63"> A little &mdash; &minus;63%</label>
           <label class="opt"><input type="radio" name="fee103pct" value="0.70"> Some &mdash; &minus;70%</label>
           <label class="opt"><input type="radio" name="fee103pct" value="0.78" checked> A lot &mdash; &minus;78%</label>
@@ -113,7 +113,7 @@ footer p b{color:var(--ink-2); font-weight:700;}
           <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
           <span class="slider-val" id="entriesVal">343,981</span>
         </div>
-        <p class="hint">343,981 is the real number of applicants in 2026. Drag to see what happens if more or fewer people apply.</p>
+        <p class="hint">This is the baseline &mdash; before any fee scenario shrinks it. 343,981 is the real number of applicants in 2026. Drag to see what happens if more or fewer people apply.</p>
       </div>
     </aside>
 
@@ -172,7 +172,7 @@ footer p b{color:var(--ink-2); font-weight:700;}
     <p>&bull; <b>Wage level weighted</b> and <b>top wage level directly</b> sort people into four pay grades (based on how their salary compares to others in the same field and area) and give higher grades a better shot.</p>
     <p>&bull; <b>Top salary</b> skips randomness entirely &mdash; the highest-paid applicants get in first, full stop.</p>
     <p>&bull; The <b>$100K fee</b> assumes everyone applying from outside the U.S. drops out entirely, since they'd have to pay it to get a visa. People already in the U.S. changing status don't pay it, so they're unaffected.</p>
-    <p>&bull; The <b>$103K fee</b> assumes everyone earning under $103K drops out entirely. For people earning more, you pick how much it thins out applications &mdash; whichever amount you pick, we assume the lowest earners above $103K are the first to drop out.</p>
+    <p>&bull; The <b>$103K fee</b> works by percentage: you pick how much it shrinks the total number of applicants, and we remove the lowest earners first &mdash; that always wipes out everyone under $103K (they're the very lowest earners), plus some people above it too, since even they'd be discouraged by a fee that size.</p>
     <p>&bull; The map and the "picked from H-1B dependent employers" stat use real, separately-measured 2024 data on which companies are H-1B dependent (a legal category for employers whose workforce leans heavily on H-1B visas) and where they're located &mdash; not an estimate from the salary data.</p>
   </footer>
 </div>
@@ -304,15 +304,12 @@ function computeFineEligible(scale, fee, fee103pct){
     // filings) varies a lot by pay — not a single flat average across all salaries.
     fine = fine.map((v,i)=>v*retention100kForFineBin(i));
   } else if(fee === '103k'){
-    fine = fine.map((v,i)=>{
-      const lo = i<30 ? i*BIN_WIDTH : 300000;
-      const hi = i<30 ? (i+1)*BIN_WIDTH : Infinity;
-      if(hi<=103000) return 0;
-      if(lo>=103000) return v;
-      return v*((hi-103000)/(hi-lo));
-    });
-    const remainingTotal = fine.reduce((a,b)=>a+b,0);
-    let toRemove = remainingTotal*fee103pct;
+    // remove the lowest-earning X% of EVERYONE who applied (not just the remainder above
+    // $103K) — for every reduction option currently offered (63%+), this always eliminates
+    // everyone under $103K outright, since they're already the lowest earners in the pool,
+    // and then keeps going into part of the $103K+ crowd too.
+    const originalTotal = fine.reduce((a,b)=>a+b,0);
+    let toRemove = originalTotal*fee103pct;
     for(let i=0;i<fine.length && toRemove>0;i++){
       const take = Math.min(fine[i], toRemove);
       fine[i]-=take; toRemove-=take;
