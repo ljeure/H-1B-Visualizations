@@ -40,7 +40,7 @@ button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); backgro
 .colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust);}
 .rowlabel{font-family:"Courier New",Courier,monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums; font-weight:700;}
 .cell{border-bottom:1px dashed var(--line-strong); padding:8px 4px; min-height:28px; display:flex; align-items:center;}
-.dots{display:grid; grid-template-columns:repeat(auto-fill,11px); grid-auto-rows:11px; justify-content:start;}
+.dots{display:grid; grid-template-columns:repeat(auto-fill,11px); grid-auto-rows:11px; justify-content:start; width:100%;}
 .dot{width:8px; height:8px; border-radius:50%; flex:none;}
 .dot.solid-n{background:var(--blue);}
 .dot.solid-y{background:var(--rust);}
@@ -121,6 +121,11 @@ const OCC_LABEL = {
   'Computer-Related':'Computer-related',
   'Math, Science & Engineering':'Math, physical science &amp; engineering',
   'Other':'Other'
+};
+const OCC_DETAIL = {
+  'Computer-Related':'USCIS I-129 job codes: systems analysis & programming, data communications & networks, computer systems user support, computer systems technical support.',
+  'Math, Science & Engineering':'USCIS I-129 job codes: architectural, aeronautical, electrical/electronics, civil, ceramic, mechanical, chemical, mining/petroleum, metallurgy, industrial, agricultural, marine & nuclear engineering, drafters, surveying/cartography — plus mathematics, astronomy, chemistry, physics, geology & meteorology.',
+  'Other':'Everything else: life sciences, social sciences, medicine & health, education, museum/library/archival, law & jurisprudence, religion & theology, writing, art, entertainment & recreation, administrative specializations, managers & officials, misc. professional/technical/managerial, sales promotion, and miscellaneous.'
 };
 const WAGE_ORDER = ['200+','150-200','100-150','50-100','0-50'];
 const WAGE_LABEL = {'200+':'$200k+','150-200':'$150–200k','100-150':'$100–150k','50-100':'$50–100k','0-50':'$0–50k'};
@@ -248,6 +253,8 @@ function renderChart(){
     const h = document.createElement('div');
     h.className = 'colhead';
     h.innerHTML = OCC_LABEL[occ];
+    h.title = OCC_DETAIL[occ];
+    h.style.cursor = 'help';
     grid.appendChild(h);
   });
   WAGE_ORDER.forEach(wb=>{
