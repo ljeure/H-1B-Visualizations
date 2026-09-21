@@ -48,8 +48,8 @@ button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); backgro
 .colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust); cursor:help;}
 .rowlabel{font-family:"Courier New",Courier,monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums; font-weight:700;}
 .cell{border-bottom:1px dashed var(--line-strong); padding:8px 4px; min-height:28px; display:flex; align-items:center;}
-.dots{display:grid; grid-template-columns:repeat(auto-fill,11px); grid-auto-rows:11px; justify-content:start; width:100%;}
-.dot{width:10px; height:10px; flex:none;}
+.dots{display:grid; grid-template-columns:repeat(auto-fill,18px); grid-auto-rows:18px; justify-content:start; width:100%;}
+.dot{width:16px; height:16px; flex:none;}
 .dot.solid-n, .dot.solid-y{
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
@@ -65,7 +65,8 @@ button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); backgro
 }
 .legend{display:flex; gap:22px; flex-wrap:wrap; margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line);}
 .legend-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-2);}
-.legend-item .dot, .legend-item .sw{width:9px; height:9px; display:inline-block;}
+.legend-item .dot{width:14px; height:14px; display:inline-block;}
+.legend-item .sw{width:9px; height:9px; display:inline-block;}
 #barchart{display:flex; align-items:flex-end; gap:2px; height:220px; border-bottom:2px solid var(--rust); padding-top:20px; position:relative;}
 .bar-col{flex:1; display:flex; flex-direction:column-reverse; align-items:stretch; height:100%; position:relative;}
 .bar-eligible{background:var(--blue-soft); width:100%;}
@@ -153,6 +154,11 @@ footer p b{color:var(--ink-2); font-weight:700;}
     </div>
   </div>
 
+  <div class="panel">
+    <h2>Result</h2>
+    <div class="stats" id="statrow"></div>
+  </div>
+
   <div class="split-row">
     <div class="panel">
       <h2>By salary</h2>
@@ -174,11 +180,6 @@ footer p b{color:var(--ink-2); font-weight:700;}
         <div class="tooltip" id="mapTooltip"></div>
       </div>
     </div>
-  </div>
-
-  <div class="panel">
-    <h2>Result</h2>
-    <div class="stats" id="statrow"></div>
   </div>
 
   <footer>
