@@ -231,6 +231,9 @@ const NONDEP_CONSULAR_SHARE = 25121/(25121+38812); // 0.393
 
 const STATE_ALL = {"NY":6830,"CA":15756,"VA":3236,"TX":17907,"IN":724,"NJ":9605,"FL":2493,"IL":4337,"WA":5339,"MA":3187,"MO":586,"CT":672,"AZ":1138,"DC":311,"NV":204,"NC":2535,"MI":2405,"LA":312,"AR":324,"PA":1734,"OR":648,"GA":3480,"MD":1617,"DE":410,"OH":1391,"MN":660,"ID":149,"NH":169,"CO":716,"NM":118,"UT":435,"NE":128,"AL":140,"WI":313,"TN":552,"SC":413,"RI":68,"WV":21,"HI":18,"IA":186,"KS":223,"OK":79,"WY":61,"KY":150,"MT":27,"SD":34,"ND":32,"MS":27,"VT":19,"AK":13,"ME":57};
 const STATE_DEP = {"NY":648,"CA":3208,"IN":192,"NJ":5236,"TX":8426,"MO":143,"VA":1177,"MI":911,"AZ":209,"WA":470,"IL":1320,"MA":443,"FL":538,"NC":593,"MD":960,"AR":96,"GA":1192,"NM":74,"PA":290,"OH":542,"CT":182,"TN":154,"CO":144,"KS":90,"SC":124,"DC":16,"WY":27,"KY":44,"MT":14,"OR":40,"SD":8,"WI":34,"MN":143,"NH":38,"OK":8,"AL":34,"UT":25,"DE":80,"IA":76,"RI":14,"LA":6,"NE":16,"NV":15,"ND":5,"WV":6,"ME":4,"MS":1,"VT":1};
+const STATE_ALL_TOTAL = Object.values(STATE_ALL).reduce((a,b)=>a+b,0);
+const STATE_DEP_TOTAL = Object.values(STATE_DEP).reduce((a,b)=>a+b,0);
+const STATE_NONDEP_TOTAL = STATE_ALL_TOTAL - STATE_DEP_TOTAL;
 
 const FIPS_NAME = {"AL":"Alabama","AK":"Alaska","AZ":"Arizona","AR":"Arkansas","CA":"California","CO":"Colorado","CT":"Connecticut","DE":"Delaware","DC":"District of Columbia","FL":"Florida","GA":"Georgia","HI":"Hawaii","ID":"Idaho","IL":"Illinois","IN":"Indiana","IA":"Iowa","KS":"Kansas","KY":"Kentucky","LA":"Louisiana","ME":"Maine","MD":"Maryland","MA":"Massachusetts","MI":"Michigan","MN":"Minnesota","MS":"Mississippi","MO":"Missouri","MT":"Montana","NE":"Nebraska","NV":"Nevada","NH":"New Hampshire","NJ":"New Jersey","NM":"New Mexico","NY":"New York","NC":"North Carolina","ND":"North Dakota","OH":"Ohio","OK":"Oklahoma","OR":"Oregon","PA":"Pennsylvania","RI":"Rhode Island","SC":"South Carolina","SD":"South Dakota","TN":"Tennessee","TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington","WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming"};
 
@@ -446,14 +449,16 @@ function render(){
     axis.appendChild(s);
   }
 
-  // map: reweight real state totals by overall dep/nondep retention+selection rate
-  const depFactor = totalScaledDepY>0 ? totalSelectedDepY/totalScaledDepY : 0;
-  const nonDepFactor = totalScaledDepN>0 ? totalSelectedDepN/totalScaledDepN : 0;
+  // map: real worksite-state SHARES (from the filed population) rescaled to sum to this
+  // scenario's actual selected dep/non-dep totals — not the entries-based `scale` factor,
+  // since STATE_ALL/STATE_DEP are real geographic shares, not entry counts.
+  const depStateFactor = STATE_DEP_TOTAL>0 ? totalSelectedDepY/STATE_DEP_TOTAL : 0;
+  const nonDepStateFactor = STATE_NONDEP_TOTAL>0 ? totalSelectedDepN/STATE_NONDEP_TOTAL : 0;
   const stateSelected = {};
   Object.keys(STATE_ALL).forEach(s=>{
     const dep = STATE_DEP[s]||0;
     const nondep = STATE_ALL[s]-dep;
-    stateSelected[s] = dep*scale*depFactor + nondep*scale*nonDepFactor;
+    stateSelected[s] = dep*depStateFactor + nondep*nonDepStateFactor;
   });
   document.getElementById('mapN').textContent = fmt(Object.values(stateSelected).reduce((a,b)=>a+b,0));
   updateMapColors(stateSelected);
