@@ -22,6 +22,9 @@ body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,G
 h1{font-size:22px; font-weight:700; margin:0 0 4px;}
 h2{font-size:14px; font-weight:700; margin:0 0 10px; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em;}
 .kicker{font-family:"Courier New",Courier,monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-2); margin:0 0 2px; font-weight:700;}
+.headline-banner{background:var(--rust); color:var(--bg); text-align:center; padding:1.1rem 1rem; margin:0 0 1.5rem; border-radius:2px;}
+.headline-banner .h1{font-size:26px; font-weight:700; line-height:1.25;}
+.headline-banner .h2sub{font-size:14px; font-weight:700; margin-top:4px; opacity:0.85;}
 .sub{font-size:14px; color:var(--ink-2); margin:0 0 1.5rem; line-height:1.55;}
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem; margin-bottom:1.5rem;}
 .slider-row{display:flex; align-items:center; gap:16px; margin-bottom:4px;}
@@ -78,6 +81,10 @@ footer p b{color:var(--ink-2); font-weight:700;}
 </style>
 
 <div class="wrap">
+  <div class="headline-banner" id="scenarioHeadline">
+    <div class="h1" id="scenarioHeadlineMain">Random lottery</div>
+    <div class="h2sub" id="scenarioHeadlineSub" style="display:none;"></div>
+  </div>
   <p class="kicker">An interactive explainer</p>
   <h1>How does the H-1B lottery work?</h1>
   <p class="sub">Every year, way more people apply for an H-1B visa than there are slots (85,000). Right now, who gets picked is basically a coin flip &mdash; pay has nothing to do with it. Try the options below to see who gets in under different rules.</p>
@@ -381,6 +388,22 @@ function render(){
   const mech = document.querySelector('input[name=mech]:checked').value;
   const fee = document.querySelector('input[name=fee]:checked').value;
   const fee103pct = parseFloat(document.querySelector('input[name=fee103pct]:checked').value);
+
+  const MECH_HEADLINE = {
+    random: 'Random lottery',
+    weighted: 'H-1Bs weighted by wage level',
+    topsalary: 'H-1Bs granted to the highest-paid people',
+    toplevel: 'H-1Bs granted by wage level, highest first'
+  };
+  const FEE_HEADLINE = {
+    none: '',
+    '100k': '+ $100K fee on people filing from abroad',
+    '103k': '+ $103K fee on everyone'
+  };
+  document.getElementById('scenarioHeadlineMain').textContent = MECH_HEADLINE[mech];
+  const subEl = document.getElementById('scenarioHeadlineSub');
+  if(fee === 'none'){ subEl.style.display = 'none'; }
+  else { subEl.style.display = 'block'; subEl.textContent = FEE_HEADLINE[fee]; }
 
   const fineEligible = computeFineEligible(scale, fee, fee103pct);
   const fineSelected = computeFineSelected(fineEligible, mech);
