@@ -22,7 +22,7 @@ body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,G
 h1{font-size:22px; font-weight:700; margin:0 0 4px;}
 h2{font-size:14px; font-weight:700; margin:0 0 10px; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em;}
 .kicker{font-family:"Courier New",Courier,monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-2); margin:0 0 2px; font-weight:700;}
-.sub{font-size:14px; color:var(--ink-2); margin:0 0 1.5rem; max-width:680px; line-height:1.55;}
+.sub{font-size:14px; color:var(--ink-2); margin:0 0 1.5rem; line-height:1.55;}
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem; margin-bottom:1.5rem;}
 .slider-row{display:flex; align-items:center; gap:16px; margin-bottom:4px;}
 .slider-row input[type=range]{flex:1; accent-color:var(--rust);}
@@ -103,8 +103,18 @@ footer p b{color:var(--ink-2); font-weight:700;}
           <label class="opt"><input type="radio" name="fee103pct" value="0.70"> Some &mdash; &minus;70%</label>
           <label class="opt"><input type="radio" name="fee103pct" value="0.78" checked> A lot &mdash; &minus;78%</label>
           <label class="opt"><input type="radio" name="fee103pct" value="0.91"> Nearly everyone &mdash; &minus;91%</label>
+          <div style="font-size:10.5px; color:var(--ink-3); margin-top:6px;">Source: IFP, <a href="https://ifp.org/explaining-the-proposed-103k-fee-on-h-1bs/" target="_blank" rel="noopener" style="color:var(--ink-3);">"Explaining the Proposed $103K H-1B Fee"</a></div>
         </div>
       </fieldset>
+
+      <div class="panel">
+        <h2>How many people apply</h2>
+        <div class="slider-row">
+          <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
+          <span class="slider-val" id="entriesVal">343,981</span>
+        </div>
+        <p class="hint">343,981 is the real number of applicants in 2026. Drag to see what happens if more or fewer people apply.</p>
+      </div>
     </aside>
 
     <main>
@@ -151,15 +161,6 @@ footer p b{color:var(--ink-2); font-weight:700;}
             <div class="tooltip" id="mapTooltip"></div>
           </div>
         </div>
-      </div>
-
-      <div class="panel">
-        <h2>How many people apply</h2>
-        <div class="slider-row">
-          <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
-          <span class="slider-val" id="entriesVal">343,981</span>
-        </div>
-        <p class="hint">343,981 is the real number of applicants in 2026. Drag to see what happens if more or fewer people apply.</p>
       </div>
     </main>
   </div>
