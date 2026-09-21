@@ -1,57 +1,71 @@
-<title>H-1B Lottery Explorer</title>
+<title>How does the H-1B lottery work?</title>
 <style>
 :root{
   --bg:#f5e6c8; --surface:#ede0c8; --surface-2:#e2d3ac;
   --ink:#1a1a1a; --ink-2:#6b5b47; --ink-3:#8a7a63;
   --line:#d4c4a0; --line-strong:#b5a37c;
-  --blue:#2a78d6; --blue-soft:#b5d4f4; --blue-ink:#0c447c;
-  --rust:#8b2500; --rust-soft:#d8b090; --rust-ink:#8b2500;
+  --blue:#2a78d6; --blue-soft:#b7d3f6;
+  --rust:#8b2500;
   --hollow-border:#a8967a;
-  --chart-surface:#ede0c8;
-  --tab-active:#8b2500; --tab-active-ink:#f5e6c8;
   color-scheme:light;
 }
 *{box-sizing:border-box;}
 body{background:var(--bg); color:var(--ink); font-family:"Courier New",Courier,Georgia,serif; margin:0; padding:2rem 1.5rem 4rem;}
-.wrap{max-width:1080px; margin:0 auto;}
-.mono{font-family:"Courier New",Courier,Georgia,serif;}
-h1{font-size:22px; font-weight:700; margin:0 0 4px; letter-spacing:0;}
+.wrap{max-width:1200px; margin:0 auto;}
+.layout{display:grid; grid-template-columns:300px 1fr; gap:1.5rem; align-items:start;}
+.sidebar{display:flex; flex-direction:column; gap:1.5rem;}
+.sidebar .panel{margin-bottom:0;}
+.split-row{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
+@media (max-width:860px){ .layout{grid-template-columns:1fr;} .split-row{grid-template-columns:1fr;} }
+.qmark{display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; border:1.5px solid var(--rust); color:var(--rust); font-size:10px; font-weight:700; margin-left:5px; cursor:help; vertical-align:middle;}
+.mono{font-family:"Courier New",Courier,monospace;}
+h1{font-size:22px; font-weight:700; margin:0 0 4px;}
+h2{font-size:14px; font-weight:700; margin:0 0 10px; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em;}
 .kicker{font-family:"Courier New",Courier,monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-2); margin:0 0 2px; font-weight:700;}
-.sub{font-size:14px; color:var(--ink-2); margin:0 0 1.75rem; max-width:640px; line-height:1.55;}
-.tabbar{display:flex; align-items:center; gap:6px; margin-bottom:1.25rem; flex-wrap:wrap;}
-.tab{font-family:"Courier New",Courier,monospace; font-weight:700; font-size:13px; padding:8px 16px; border:none; border-radius:2px; background:var(--surface-2); color:var(--ink-2); cursor:not-allowed;}
-.tab[data-active="true"]{background:var(--tab-active); color:var(--tab-active-ink); cursor:default;}
-.tab[data-enabled="true"]:not([data-active="true"]){color:var(--ink); cursor:pointer;}
-.tab[data-enabled="true"]:not([data-active="true"]):hover{background:var(--line-strong);}
-.controls{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;}
-.stats{display:flex; gap:20px; flex-wrap:wrap;}
-.stat{display:flex; flex-direction:column; gap:2px;}
-.stat .v{font-family:"Courier New",Courier,monospace; font-size:18px; font-weight:700; font-variant-numeric:tabular-nums;}
-.stat .l{font-size:11px; color:var(--ink-2); text-transform:uppercase; letter-spacing:0.06em;}
+.sub{font-size:14px; color:var(--ink-2); margin:0 0 1.5rem; max-width:680px; line-height:1.55;}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem; margin-bottom:1.5rem;}
+.slider-row{display:flex; align-items:center; gap:16px; margin-bottom:4px;}
+.slider-row input[type=range]{flex:1; accent-color:var(--rust);}
+.slider-val{font-weight:700; font-size:16px; min-width:110px; text-align:right; font-variant-numeric:tabular-nums;}
+.hint{font-size:11px; color:var(--ink-3); margin:0;}
+.controls-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
+fieldset{border:1px solid var(--line); border-radius:2px; padding:12px 14px; margin:0;}
+legend{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); padding:0 6px;}
+label.opt{display:flex; align-items:flex-start; gap:8px; font-size:13px; padding:5px 0; cursor:pointer; line-height:1.4;}
+label.opt input{margin-top:3px; accent-color:var(--rust);}
+label.opt .d{color:var(--ink-3); font-size:11.5px;}
+.subpicker{margin-top:8px; padding:10px; background:var(--surface-2); border-radius:2px; display:none;}
+.subpicker.show{display:block;}
+.subpicker label.opt{padding:3px 0;}
+.stats{display:flex; gap:22px; flex-wrap:wrap;}
+.stat .v{font-family:"Courier New",Courier,monospace; font-size:19px; font-weight:700; font-variant-numeric:tabular-nums;}
+.stat .l{font-size:11px; color:var(--ink-2); text-transform:uppercase; letter-spacing:0.04em;}
+.toprow{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:1rem;}
 button.toggle{font-family:"Courier New",Courier,monospace; font-size:13px; font-weight:700; display:flex; align-items:center; gap:9px; background:var(--surface-2); border:1px solid var(--line-strong); border-radius:2px; padding:7px 14px 7px 8px; cursor:pointer; color:var(--ink);}
 button.toggle:hover{border-color:var(--rust);}
 .switch{width:30px; height:17px; border-radius:2px; background:var(--line-strong); position:relative; transition:background .15s; flex:none;}
 .switch i{position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:1px; background:var(--surface); transition:transform .15s;}
 button.toggle[aria-pressed="true"] .switch{background:var(--rust);}
 button.toggle[aria-pressed="true"] .switch i{transform:translateX(13px); background:#fff;}
-.panel{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:1.5rem;}
 .chart-grid{display:grid; grid-template-columns:104px repeat(3,1fr); column-gap:10px; row-gap:2px;}
 .corner{font-size:11px; color:var(--ink-3);}
-.colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust);}
+.colhead{font-size:12px; font-weight:700; text-align:center; padding-bottom:10px; border-bottom:2px solid var(--rust); margin-bottom:4px; line-height:1.3; color:var(--rust); cursor:help;}
 .rowlabel{font-family:"Courier New",Courier,monospace; font-size:12px; color:var(--ink-2); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-variant-numeric:tabular-nums; font-weight:700;}
 .cell{border-bottom:1px dashed var(--line-strong); padding:8px 4px; min-height:28px; display:flex; align-items:center;}
 .dots{display:grid; grid-template-columns:repeat(auto-fill,11px); grid-auto-rows:11px; justify-content:start; width:100%;}
 .dot{width:8px; height:8px; border-radius:50%; flex:none;}
 .dot.solid-n{background:var(--blue);}
 .dot.solid-y{background:var(--rust);}
-.dot.partial{background:var(--blue); opacity:0.32; border:1px solid var(--blue);}
 .dot.hollow{background:transparent; border:1px solid var(--hollow-border);}
-.tinytag{font-family:"Courier New",Courier,monospace; font-size:10px; color:var(--ink-3); align-self:center;}
-.tinytag.overflow{margin-left:2px;}
 .legend{display:flex; gap:22px; flex-wrap:wrap; margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--line);}
 .legend-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-2);}
-.legend-item .dot{width:9px; height:9px;}
-.map-section{margin-top:1.75rem;}
+.legend-item .dot, .legend-item .sw{width:9px; height:9px; display:inline-block;}
+#barchart{display:flex; align-items:flex-end; gap:2px; height:220px; border-bottom:2px solid var(--rust); padding-top:20px; position:relative;}
+.bar-col{flex:1; display:flex; flex-direction:column-reverse; align-items:stretch; height:100%; position:relative;}
+.bar-eligible{background:var(--blue-soft); width:100%;}
+.bar-selected{background:var(--blue); width:100%; position:absolute; bottom:0; left:0;}
+.axis-labels{display:flex; gap:2px; margin-top:4px;}
+.axis-labels span{flex:1; font-size:9px; color:var(--ink-3); text-align:center; font-family:"Courier New",Courier,monospace;}
 .map-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
 .map-title{font-size:14px; font-weight:700;}
 .map-title .mono{font-size:12px; color:var(--ink-2); font-weight:400;}
@@ -64,150 +78,178 @@ footer p b{color:var(--ink-2); font-weight:700;}
 </style>
 
 <div class="wrap">
-  <p class="kicker">USCIS FOIA registration &amp; petition data · TRK #13139</p>
-  <h1>H-1B lottery explorer</h1>
-  <p class="sub">Every dot is people, not a share. Solid = actually filed a petition (real data). Outline = submitted into the lottery, no filing found for them (estimated). Columns group occupation, rows group annualized wage.</p>
+  <p class="kicker">An interactive explainer</p>
+  <h1>How does the H-1B lottery work?</h1>
+  <p class="sub">Every year, way more people apply for an H-1B visa than there are slots (85,000). Right now, who gets picked is basically a coin flip &mdash; pay has nothing to do with it. Try the options below to see who gets in under different rules.</p>
 
-  <div class="navrow" style="display:flex; gap:6px; margin-bottom:1.25rem;">
-    <a href="index.html" style="font-family:'Courier New',Courier,monospace; font-weight:700; font-size:13px; padding:8px 16px; border-radius:2px; background:var(--rust); color:var(--bg); text-decoration:none;">Historical (FY2021&ndash;24)</a>
-    <a href="simulator.html" style="font-family:'Courier New',Courier,monospace; font-weight:700; font-size:13px; padding:8px 16px; border-radius:2px; background:var(--surface-2); color:var(--ink); text-decoration:none;">Scenario simulator</a>
-  </div>
+  <div class="layout">
+    <aside class="sidebar">
+      <fieldset id="mechGroup" class="panel">
+        <legend>How winners are picked</legend>
+        <label class="opt"><input type="radio" name="mech" value="random" checked> Random lottery <span class="d">(status quo, how it works today)</span></label>
+        <label class="opt"><input type="radio" name="mech" value="weighted"> Wage level weighted</label>
+        <label class="opt"><input type="radio" name="mech" value="topsalary"> Top salary <span class="d">(hypothetical option)</span></label>
+        <label class="opt"><input type="radio" name="mech" value="toplevel"> Top wage level directly <span class="d">(hypothetical option)</span></label>
+      </fieldset>
 
-  <div class="tabbar" id="tabbar"></div>
+      <fieldset id="feeGroup" class="panel">
+        <legend>Trump fee scenario</legend>
+        <label class="opt"><input type="radio" name="fee" value="none" checked> None</label>
+        <label class="opt"><input type="radio" name="fee" value="100k"> $100K fee on people filing from abroad <span class="d">(implemented in 2026)</span></label>
+        <label class="opt"><input type="radio" name="fee" value="103k"> $103K fee on everyone <span class="d">(proposed rule, would start in 2027)</span></label>
+        <div class="subpicker" id="fee103sub">
+          <div style="font-size:11px; color:var(--ink-2); margin-bottom:4px; font-weight:700;">How much would this shrink applications above $103K?</div>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.63"> A little &mdash; &minus;63%</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.70"> Some &mdash; &minus;70%</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.78" checked> A lot &mdash; &minus;78%</label>
+          <label class="opt"><input type="radio" name="fee103pct" value="0.91"> Nearly everyone &mdash; &minus;91%</label>
+        </div>
+      </fieldset>
+    </aside>
 
-  <div class="controls">
-    <div class="stats" id="statrow"></div>
-    <button class="toggle" id="depToggle" aria-pressed="false">
-      <span class="switch"><i></i></span>
-      <span id="depToggleLabel">Highlight H-1B dependent employers</span>
-    </button>
-  </div>
+    <main>
+      <div class="panel">
+        <div class="toprow">
+          <h2 style="margin:0;">Result</h2>
+          <button class="toggle" id="depToggle" aria-pressed="false">
+            <span class="switch"><i></i></span>
+            <span>Highlight H-1B dependent employers</span>
+          </button>
+        </div>
+        <div class="stats" id="statrow"></div>
+      </div>
 
-  <div class="panel">
-    <div class="chart-grid" id="chartGrid"></div>
-    <div class="legend">
-      <div class="legend-item"><span class="dot hollow"></span>No filing found (estimated)</div>
-      <div class="legend-item"><span class="dot solid-n"></span>Filed a petition (real)</div>
-      <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
-      <div class="legend-item mono">1 dot ≈ 500 people</div>
-    </div>
-  </div>
+      <div class="panel">
+        <h2>By occupation &amp; wage</h2>
+        <div class="chart-grid" id="chartGrid"></div>
+        <div class="legend">
+          <div class="legend-item"><span class="dot hollow"></span>Eligible, not selected</div>
+          <div class="legend-item"><span class="dot solid-n"></span>Selected</div>
+          <div class="legend-item mono" id="depLegendItem" style="display:none;"><span class="dot solid-y"></span>of which, H-1B dependent employer</div>
+          <div class="legend-item mono">1 dot &asymp; 500 people</div>
+        </div>
+      </div>
 
-  <div class="map-section panel">
-    <div class="map-head">
-      <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">— all filed petitions</span></div>
-      <div class="mono" style="font-size:11px; color:var(--ink-3);">n = <span id="mapN"></span></div>
-    </div>
-    <div id="mapwrap">
-      <svg id="map" viewBox="0 0 900 560" width="900" height="560" style="width:100%; height:auto; display:block; overflow:visible;"></svg>
-      <div class="tooltip" id="mapTooltip"></div>
-    </div>
+      <div class="split-row">
+        <div class="panel">
+          <h2>By salary</h2>
+          <div id="barchart"></div>
+          <div class="axis-labels" id="axisLabels"></div>
+          <div class="legend">
+            <div class="legend-item"><span class="sw" style="background:var(--blue-soft);"></span>Eligible, not selected</div>
+            <div class="legend-item"><span class="sw" style="background:var(--blue);"></span>Selected</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="map-head">
+            <div class="map-title">Worksite state <span class="mono" id="mapModeLabel">&mdash; selected population</span></div>
+            <div class="mono" style="font-size:11px; color:var(--ink-3);">n = <span id="mapN"></span></div>
+          </div>
+          <div id="mapwrap">
+            <svg id="map" viewBox="0 0 900 560" width="900" height="560" style="width:100%; height:auto; display:block; overflow:visible;"></svg>
+            <div class="tooltip" id="mapTooltip"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>How many people apply</h2>
+        <div class="slider-row">
+          <input type="range" id="entriesSlider" min="150000" max="1200000" step="10000" value="343981">
+          <span class="slider-val" id="entriesVal">343,981</span>
+        </div>
+        <p class="hint">343,981 is the real number of applicants in 2026. Drag to see what happens if more or fewer people apply.</p>
+      </div>
+    </main>
   </div>
 
   <footer>
-    <p><b>What's real vs. estimated.</b> Wage, occupation, worksite and dependent-employer status only exist for registrations that actually resulted in a filed I-129 petition — solid dots are that real, observed population. Everyone else who was submitted into the lottery (selected or not, we can't tell which without a filing) has no wage/occupation data at all, so outline dots estimate that remainder assuming it shares the same wage/occupation shape as the observed filers, scaled to match the year's real total submission count.</p>
-    <p><b>Median and average salary</b> are computed only from the real filed population (no estimation), after excluding roughly 0.3–0.5% of records with implausible wage values (under $10K or over $1M/year, almost certainly data-entry errors) from the average specifically — the median is unaffected either way.</p>
-    <p><b>FY2021 and FY2022 are disabled</b> — this FOIA release captured occupation, industry, worksite and dependent-employer status for those years' filed petitions, but never populated the wage field, so the grid's y-axis has nothing to plot. Would need a different source (e.g. DOL LCA data) to fill that gap.</p>
-    <p><b>Occupation categories</b> are USCIS's own I-129 job-code groupings (not BLS/SOC). <b>H-1B dependent</b> is the employer's self-attested status on the petition (S1Q1A) — a legal ratio test, not a direct "staffing/outsourcing" label. Map shows real worksite states for the filed subset only, not extrapolated.</p>
-    <p>Source: <span class="mono">github.com/BloombergGraphics/2024-h1b-immigration-data</span>, USCIS FOIA TRK #13139.</p>
+    <h2>The rules this tool follows</h2>
+    <p>&bull; Who applies, what they do, and what they get paid is based on real 2024 government data (the most recent full data available). We assume today's and future applicants look similar, scaled to the 343,981 people who actually applied in 2026.</p>
+    <p>&bull; If you drag the slider to change how many people apply, everyone's chances change by the same amount &mdash; the mix of jobs and salaries stays the same.</p>
+    <p>&bull; <b>Wage level weighted</b> and <b>top wage level directly</b> sort people into four pay grades (based on how their salary compares to others in the same field and area) and give higher grades a better shot.</p>
+    <p>&bull; <b>Top salary</b> skips randomness entirely &mdash; the highest-paid applicants get in first, full stop.</p>
+    <p>&bull; The <b>$100K fee</b> assumes everyone applying from outside the U.S. drops out entirely, since they'd have to pay it to get a visa. People already in the U.S. changing status don't pay it, so they're unaffected.</p>
+    <p>&bull; The <b>$103K fee</b> assumes everyone earning under $103K drops out entirely. For people earning more, you pick how much it thins out applications &mdash; whichever amount you pick, we assume the lowest earners above $103K are the first to drop out.</p>
+    <p>&bull; The map and the "picked from H-1B dependent employers" stat use real, separately-measured 2024 data on which companies are H-1B dependent (a legal category for employers whose workforce leans heavily on H-1B visas) and where they're located &mdash; not an estimate from the salary data.</p>
   </footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const UNIT = 500;
+// ---------- fine-grained (31-bin, $10k) wage shape, FY2024 real, wage-only ----------
+const FINE_BINS = [174,50,23,142,673,1990,5441,11413,15673,13939,9290,6681,6363,4872,3908,2862,2241,1773,1137,1011,683,506,318,139,95,182,54,55,26,36,360]; // last = 300k+ overflow
+const N_FINE = FINE_BINS.length; // 31
+const BIN_WIDTH = 10000;
+const FINE_MID = FINE_BINS.map((_,i)=> i < 30 ? i*BIN_WIDTH + BIN_WIDTH/2 : 320000);
+const FINE_TOTAL = FINE_BINS.reduce((a,b)=>a+b,0); // 92110, matches real FY2024 filed count
+
+const LEVEL_CUTOFFS = [82000, 98000, 126000];
+function levelOf(mid){ if(mid<LEVEL_CUTOFFS[0]) return 1; if(mid<LEVEL_CUTOFFS[1]) return 2; if(mid<LEVEL_CUTOFFS[2]) return 3; return 4; }
+const LEVEL_WEIGHT = {1:1,2:2,3:3,4:4};
+
+// coarse (5-bin) occupation x wage grid, FY2024 real: {filed, hollow, depY, depN}. total = filed+hollow.
 const OCC_ORDER = ['Computer-Related','Math, Science & Engineering','Other'];
-const OCC_LABEL = {
-  'Computer-Related':'Computer-related',
-  'Math, Science & Engineering':'Math, physical science &amp; engineering',
-  'Other':'Other'
-};
+const OCC_LABEL = {'Computer-Related':'Computer-related','Math, Science & Engineering':'Math, physical science &amp; engineering','Other':'Other'};
 const OCC_DETAIL = {
-  'Computer-Related':'USCIS I-129 job codes: systems analysis & programming, data communications & networks, computer systems user support, computer systems technical support.',
-  'Math, Science & Engineering':'USCIS I-129 job codes: architectural, aeronautical, electrical/electronics, civil, ceramic, mechanical, chemical, mining/petroleum, metallurgy, industrial, agricultural, marine & nuclear engineering, drafters, surveying/cartography — plus mathematics, astronomy, chemistry, physics, geology & meteorology.',
-  'Other':'Everything else: life sciences, social sciences, medicine & health, education, museum/library/archival, law & jurisprudence, religion & theology, writing, art, entertainment & recreation, administrative specializations, managers & officials, misc. professional/technical/managerial, sales promotion, and miscellaneous.'
+  'Computer-Related':'Software engineers, IT support, network and data jobs. This is the biggest group by far — most H-1B visas go to people in tech.',
+  'Math, Science & Engineering':'Engineers of all kinds (civil, mechanical, electrical, chemical, and more), plus mathematicians, physicists, chemists, and surveyors.',
+  'Other':'Everything else: doctors and other medical jobs, teachers, biologists and social scientists, lawyers, artists, managers, and other professional office jobs.'
 };
 const WAGE_ORDER = ['200+','150-200','100-150','50-100','0-50'];
 const WAGE_LABEL = {'200+':'$200k+','150-200':'$150–200k','100-150':'$100–150k','50-100':'$50–100k','0-50':'$0–50k'};
+const COARSE_RANGE = {'0-50':[0,5],'50-100':[5,10],'100-150':[10,15],'150-200':[15,20],'200+':[20,31]}; // fine-bin index ranges
 
-const YEARS = {
-  '2024': {
-    enabled: true,
-    totals: { entries: 758994, filed: 92110, medianWage: 98301, meanWage: 106734 },
-    cells: {
-      'Computer-Related': {
-        '0-50':    {filed:153,   hollow:1108,   depY:60,    depN:93},
-        '50-100':  {filed:33137, hollow:239915, depY:18056, depN:15081},
-        '100-150': {filed:22124, hollow:160180, depY:6760,  depN:15364},
-        '150-200': {filed:5788,  hollow:41906,  depY:721,   depN:5067},
-        '200+':    {filed:1165,  hollow:8434,   depY:268,   depN:897}
-      },
-      'Math, Science & Engineering': {
-        '0-50':    {filed:103,  hollow:745,   depY:5,   depN:98},
-        '50-100':  {filed:7091, hollow:51339, depY:670, depN:6421},
-        '100-150': {filed:4980, hollow:36056, depY:457, depN:4523},
-        '150-200': {filed:1152, hollow:8340,  depY:153, depN:999},
-        '200+':    {filed:261,  hollow:1890,  depY:36,  depN:225}
-      },
-      'Other': {
-        '0-50':    {filed:806,  hollow:5836,  depY:11,  depN:795},
-        '50-100':  {filed:8228, hollow:59571, depY:634, depN:7594},
-        '100-150': {filed:4010, hollow:29033, depY:152, depN:3858},
-        '150-200': {filed:2084, hollow:15088, depY:47,  depN:2037},
-        '200+':    {filed:1028, hollow:7443,  depY:20,  depN:1008}
-      }
-    },
-    stateAll: {"NY":6830,"CA":15756,"VA":3236,"TX":17907,"IN":724,"NJ":9605,"FL":2493,"IL":4337,"WA":5339,"MA":3187,"MO":586,"CT":672,"AZ":1138,"DC":311,"NV":204,"NC":2535,"MI":2405,"LA":312,"AR":324,"PA":1734,"OR":648,"GA":3480,"MD":1617,"DE":410,"OH":1391,"MN":660,"ID":149,"NH":169,"CO":716,"NM":118,"UT":435,"NE":128,"AL":140,"WI":313,"TN":552,"SC":413,"RI":68,"WV":21,"HI":18,"IA":186,"KS":223,"OK":79,"WY":61,"KY":150,"MT":27,"SD":34,"ND":32,"MS":27,"VT":19,"AK":13,"ME":57},
-    stateDep: {"NY":648,"CA":3208,"IN":192,"NJ":5236,"TX":8426,"MO":143,"VA":1177,"MI":911,"AZ":209,"WA":470,"IL":1320,"MA":443,"FL":538,"NC":593,"MD":960,"AR":96,"GA":1192,"NM":74,"PA":290,"OH":542,"CT":182,"TN":154,"CO":144,"KS":90,"SC":124,"DC":16,"WY":27,"KY":44,"MT":14,"OR":40,"SD":8,"WI":34,"MN":143,"NH":38,"OK":8,"AL":34,"UT":25,"DE":80,"IA":76,"RI":14,"LA":6,"NE":16,"NV":15,"ND":5,"WV":6,"ME":4,"MS":1,"VT":1}
+const CELLS = {
+  'Computer-Related': {
+    '0-50':    {filed:153,   hollow:1108,   depY:60,    depN:93},
+    '50-100':  {filed:33137, hollow:239915, depY:18056, depN:15081},
+    '100-150': {filed:22124, hollow:160180, depY:6760,  depN:15364},
+    '150-200': {filed:5788,  hollow:41906,  depY:721,   depN:5067},
+    '200+':    {filed:1165,  hollow:8434,   depY:268,   depN:897}
   },
-  '2023': {
-    enabled: true,
-    totals: { entries: 474421, filed: 94000, medianWage: 93600, meanWage: 101262 },
-    cells: {
-      'Computer-Related': {
-        '0-50':    {filed:279,   hollow:1129,   depY:105,   depN:174},
-        '50-100':  {filed:40189, hollow:162646, depY:23062, depN:17127},
-        '100-150': {filed:19499, hollow:78913,  depY:6096,  depN:13403},
-        '150-200': {filed:4343,  hollow:17576,  depY:769,   depN:3574},
-        '200+':    {filed:789,   hollow:3193,   depY:213,   depN:576}
-      },
-      'Math, Science & Engineering': {
-        '0-50':    {filed:150,  hollow:608,   depY:14,  depN:136},
-        '50-100':  {filed:7676, hollow:31065, depY:943, depN:6733},
-        '100-150': {filed:4384, hollow:17742, depY:506, depN:3878},
-        '150-200': {filed:859,  hollow:3476,  depY:124, depN:735},
-        '200+':    {filed:159,  hollow:643,   depY:21,  depN:138}
-      },
-      'Other': {
-        '0-50':    {filed:886,  hollow:3586,  depY:22,  depN:864},
-        '50-100':  {filed:8567, hollow:34671, depY:1025,depN:7542},
-        '100-150': {filed:3744, hollow:15152, depY:254, depN:3490},
-        '150-200': {filed:1556, hollow:6297,  depY:41,  depN:1515},
-        '200+':    {filed:920,  hollow:3723,  depY:20,  depN:900}
-      }
-    },
-    stateAll: {"NJ":9475,"GA":3533,"IL":4668,"MI":2814,"MA":3293,"CA":16487,"TX":16825,"WA":5147,"MD":3109,"VA":3114,"ID":126,"DE":435,"NY":6149,"PA":1900,"CT":756,"OH":1430,"NC":2734,"SC":487,"FL":2459,"TN":593,"UT":390,"AZ":1142,"CO":656,"IN":727,"OR":732,"NV":160,"AR":328,"MO":568,"IA":237,"MS":49,"WI":408,"MN":666,"DC":255,"LA":296,"KY":169,"NE":248,"ND":38,"MT":77,"OK":188,"WY":46,"NH":214,"KS":276,"AL":138,"SD":25,"NM":98,"HI":23,"RI":130,"ME":23,"AK":6,"VT":17,"WV":20},
-    stateDep: {"NJ":5403,"TX":8680,"MI":1357,"MD":2291,"IL":1729,"CA":4197,"VA":1054,"MA":522,"GA":1728,"OH":554,"TN":121,"NY":649,"WA":752,"FL":463,"IN":261,"AZ":327,"DE":148,"NC":835,"OR":70,"MO":190,"SC":76,"IA":91,"WI":69,"PA":409,"MT":64,"CT":304,"CO":127,"KY":79,"OK":20,"AR":84,"MN":145,"KS":56,"NE":40,"NH":75,"UT":30,"NM":46,"NV":16,"MS":3,"RI":62,"DC":23,"SD":4,"WY":4,"LA":9,"ME":6,"AL":8,"VT":2,"WV":2,"ND":1}
+  'Math, Science & Engineering': {
+    '0-50':    {filed:103,  hollow:745,   depY:5,   depN:98},
+    '50-100':  {filed:7091, hollow:51339, depY:670, depN:6421},
+    '100-150': {filed:4980, hollow:36056, depY:457, depN:4523},
+    '150-200': {filed:1152, hollow:8340,  depY:153, depN:999},
+    '200+':    {filed:261,  hollow:1890,  depY:36,  depN:225}
   },
-  '2022': {enabled:false, reason:"This year's FOIA release has occupation and dependent-employer data, but wage was never populated — can't build the grid without it."},
-  '2021': {enabled:false, reason:"This year's FOIA release has occupation and dependent-employer data, but wage was never populated — can't build the grid without it."}
+  'Other': {
+    '0-50':    {filed:806,  hollow:5836,  depY:11,  depN:795},
+    '50-100':  {filed:8228, hollow:59571, depY:634, depN:7594},
+    '100-150': {filed:4010, hollow:29033, depY:152, depN:3858},
+    '150-200': {filed:2084, hollow:15088, depY:47,  depN:2037},
+    '200+':    {filed:1028, hollow:7443,  depY:20,  depN:1008}
+  }
 };
+const BASE_TOTAL_ENTRIES = OCC_ORDER.reduce((a,o)=>a+WAGE_ORDER.reduce((b,wb)=>b+CELLS[o][wb].filed+CELLS[o][wb].hollow,0),0); // 758994
+// FINE_BINS sums to 92,110 (the filed-only subset) — rescale to the 758,994 total-entries baseline,
+// assuming filed and total-entries share the same wage shape (same assumption used throughout this project)
+const FINE_TO_ENTRIES = BASE_TOTAL_ENTRIES / FINE_TOTAL; // ~8.24
+const FINE_BINS_ENTRIES = FINE_BINS.map(v=>v*FINE_TO_ENTRIES);
+
+// real, from FY2024 REQUESTED_ACTION x S1Q1A cross-tab
+const DEP_CONSULAR_SHARE = 21060/(21060+6977);   // 0.751
+const NONDEP_CONSULAR_SHARE = 25121/(25121+38812); // 0.393
+
+const STATE_ALL = {"NY":6830,"CA":15756,"VA":3236,"TX":17907,"IN":724,"NJ":9605,"FL":2493,"IL":4337,"WA":5339,"MA":3187,"MO":586,"CT":672,"AZ":1138,"DC":311,"NV":204,"NC":2535,"MI":2405,"LA":312,"AR":324,"PA":1734,"OR":648,"GA":3480,"MD":1617,"DE":410,"OH":1391,"MN":660,"ID":149,"NH":169,"CO":716,"NM":118,"UT":435,"NE":128,"AL":140,"WI":313,"TN":552,"SC":413,"RI":68,"WV":21,"HI":18,"IA":186,"KS":223,"OK":79,"WY":61,"KY":150,"MT":27,"SD":34,"ND":32,"MS":27,"VT":19,"AK":13,"ME":57};
+const STATE_DEP = {"NY":648,"CA":3208,"IN":192,"NJ":5236,"TX":8426,"MO":143,"VA":1177,"MI":911,"AZ":209,"WA":470,"IL":1320,"MA":443,"FL":538,"NC":593,"MD":960,"AR":96,"GA":1192,"NM":74,"PA":290,"OH":542,"CT":182,"TN":154,"CO":144,"KS":90,"SC":124,"DC":16,"WY":27,"KY":44,"MT":14,"OR":40,"SD":8,"WI":34,"MN":143,"NH":38,"OK":8,"AL":34,"UT":25,"DE":80,"IA":76,"RI":14,"LA":6,"NE":16,"NV":15,"ND":5,"WV":6,"ME":4,"MS":1,"VT":1};
+const STATE_ALL_TOTAL = Object.values(STATE_ALL).reduce((a,b)=>a+b,0);
+const STATE_DEP_TOTAL = Object.values(STATE_DEP).reduce((a,b)=>a+b,0);
+const STATE_NONDEP_TOTAL = STATE_ALL_TOTAL - STATE_DEP_TOTAL;
 
 const FIPS_NAME = {"AL":"Alabama","AK":"Alaska","AZ":"Arizona","AR":"Arkansas","CA":"California","CO":"Colorado","CT":"Connecticut","DE":"Delaware","DC":"District of Columbia","FL":"Florida","GA":"Georgia","HI":"Hawaii","ID":"Idaho","IL":"Illinois","IN":"Indiana","IA":"Iowa","KS":"Kansas","KY":"Kentucky","LA":"Louisiana","ME":"Maine","MD":"Maryland","MA":"Massachusetts","MI":"Michigan","MN":"Minnesota","MS":"Mississippi","MO":"Missouri","MT":"Montana","NE":"Nebraska","NV":"Nevada","NH":"New Hampshire","NJ":"New Jersey","NM":"New Mexico","NY":"New York","NC":"North Carolina","ND":"North Dakota","OH":"Ohio","OK":"Oklahoma","OR":"Oregon","PA":"Pennsylvania","RI":"Rhode Island","SC":"South Carolina","SD":"South Dakota","TN":"Tennessee","TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington","WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming"};
 
-let currentYear = '2024';
-let depOn = false;
-
 function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
-
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
-  }
-  return arr;
+function fmtMoney(n){
+  if(n >= 1e9) return '$'+(n/1e9).toFixed(2)+'B';
+  if(n >= 1e6) return '$'+(n/1e6).toFixed(1)+'M';
+  return '$'+fmt(n);
 }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 
 let headtipEl = null;
 function attachTooltip(el, text){
@@ -216,6 +258,7 @@ function attachTooltip(el, text){
     headtipEl.className = 'headtip';
     document.body.appendChild(headtipEl);
   }
+  el.style.cursor = 'help';
   el.addEventListener('mouseenter', ()=>{
     headtipEl.textContent = text;
     headtipEl.style.opacity = '1';
@@ -230,151 +273,287 @@ function attachTooltip(el, text){
   el.addEventListener('mouseleave', ()=>{ headtipEl.style.opacity = '0'; });
 }
 
-function renderTabs(){
-  const bar = document.getElementById('tabbar');
-  bar.innerHTML = '';
-  Object.keys(YEARS).sort().forEach(y=>{
-    const el = document.createElement('div');
-    el.className = 'tab';
-    el.textContent = 'FY' + y;
-    el.dataset.enabled = YEARS[y].enabled;
-    el.dataset.active = (y === currentYear);
-    if(!YEARS[y].enabled){ el.title = YEARS[y].reason || 'Data not loaded yet'; }
-    else { el.addEventListener('click', ()=>{ currentYear = y; renderAll(); }); }
-    bar.appendChild(el);
-  });
+let depOn = false;
+
+// ---------- core model ----------
+function computeFineEligible(scale, fee, fee103pct){
+  let fine = FINE_BINS_ENTRIES.map(v=>v*scale);
+  if(fee === '100k'){
+    // wage-agnostic overall retention (dependent-specific split applied later at coarse level)
+    const overallRetention = 1 - (0.305*DEP_CONSULAR_SHARE + 0.695*NONDEP_CONSULAR_SHARE); // ~0.498 avg baseline
+    fine = fine.map(v=>v*overallRetention);
+  } else if(fee === '103k'){
+    fine = fine.map((v,i)=>{
+      const lo = i<30 ? i*BIN_WIDTH : 300000;
+      const hi = i<30 ? (i+1)*BIN_WIDTH : Infinity;
+      if(hi<=103000) return 0;
+      if(lo>=103000) return v;
+      return v*((hi-103000)/(hi-lo));
+    });
+    const remainingTotal = fine.reduce((a,b)=>a+b,0);
+    let toRemove = remainingTotal*fee103pct;
+    for(let i=0;i<fine.length && toRemove>0;i++){
+      const take = Math.min(fine[i], toRemove);
+      fine[i]-=take; toRemove-=take;
+    }
+  }
+  return fine;
 }
 
-function renderStats(){
-  const t = YEARS[currentYear].totals;
-  const row = document.getElementById('statrow');
-  row.innerHTML = `
-    <div class="stat"><span class="v">${fmt(t.entries)}</span><span class="l">Total submissions</span></div>
-    <div class="stat"><span class="v">${fmt(t.filed)}</span><span class="l">Filed a petition (real data)</span></div>
-    <div class="stat"><span class="v">${(t.filed/t.entries*100).toFixed(1)}%</span><span class="l">Filing rate</span></div>
-    <div class="stat"><span class="v">$${fmt(t.medianWage)}</span><span class="l">Median salary, filed</span></div>
-    <div class="stat"><span class="v">$${fmt(t.meanWage)}</span><span class="l">Average salary, filed</span></div>
+function computeFineSelected(fineEligible, mech){
+  const total = fineEligible.reduce((a,b)=>a+b,0);
+  const quota = Math.min(85000, total);
+  if(total<=0) return fineEligible.map(()=>0);
+  if(mech === 'random'){
+    const frac = quota/total;
+    return fineEligible.map(v=>v*frac);
+  }
+  if(mech === 'weighted'){
+    const weights = fineEligible.map((v,i)=>LEVEL_WEIGHT[levelOf(FINE_MID[i])]);
+    const wTotal = fineEligible.reduce((a,v,i)=>a+v*weights[i],0);
+    return fineEligible.map((v,i)=>{
+      const share = wTotal>0 ? (v*weights[i])/wTotal : 0;
+      return Math.min(v, share*quota);
+    });
+  }
+  // topsalary / toplevel
+  const order = fineEligible.map((v,i)=>i).sort((a,b)=>FINE_MID[b]-FINE_MID[a]);
+  const out = fineEligible.map(()=>0);
+  let remaining = quota;
+  if(mech === 'topsalary'){
+    for(const i of order){
+      if(remaining<=0) break;
+      const take = Math.min(fineEligible[i], remaining);
+      out[i]=take; remaining-=take;
+    }
+  } else {
+    for(const lvl of [4,3,2,1]){
+      if(remaining<=0) break;
+      const idxs = order.filter(i=>levelOf(FINE_MID[i])===lvl);
+      const levelTotal = idxs.reduce((a,i)=>a+fineEligible[i],0);
+      if(levelTotal<=remaining){ idxs.forEach(i=>out[i]=fineEligible[i]); remaining-=levelTotal; }
+      else { const frac = remaining/levelTotal; idxs.forEach(i=>out[i]=fineEligible[i]*frac); remaining=0; }
+    }
+  }
+  return out;
+}
+
+function weightedMedianMean(bins){
+  const total = bins.reduce((a,b)=>a+b,0);
+  if(total<=0) return {median:0, mean:0, sum:0};
+  const sum = bins.reduce((a,v,i)=>a+v*FINE_MID[i],0);
+  const mean = sum/total;
+  let cum=0, median=0;
+  for(let i=0;i<bins.length;i++){
+    const prev=cum; cum+=bins[i];
+    if(cum>=total/2){
+      const lo = i<30 ? i*BIN_WIDTH : 300000;
+      const w = i<30 ? BIN_WIDTH : 100000;
+      const frac = bins[i]>0 ? (total/2-prev)/bins[i] : 0;
+      median = lo+frac*w; break;
+    }
+  }
+  return {median, mean, sum};
+}
+
+function render(){
+  const entries = parseInt(document.getElementById('entriesSlider').value);
+  document.getElementById('entriesVal').textContent = fmt(entries);
+  const scale = entries/BASE_TOTAL_ENTRIES;
+  const mech = document.querySelector('input[name=mech]:checked').value;
+  const fee = document.querySelector('input[name=fee]:checked').value;
+  const fee103pct = parseFloat(document.querySelector('input[name=fee103pct]:checked').value);
+
+  const fineEligible = computeFineEligible(scale, fee, fee103pct);
+  const fineSelected = computeFineSelected(fineEligible, mech);
+
+  // per-coarse-bin retention & selection fractions from the fine model
+  const retentionFrac = {}, selectionFrac = {};
+  WAGE_ORDER.forEach(wb=>{
+    const [a,b] = COARSE_RANGE[wb];
+    let preFee=0, postFee=0, postSel=0;
+    for(let j=a;j<b;j++){ preFee += FINE_BINS_ENTRIES[j]*scale; postFee += fineEligible[j]; postSel += fineSelected[j]; }
+    retentionFrac[wb] = preFee>0 ? postFee/preFee : 0;
+    selectionFrac[wb] = postFee>0 ? postSel/postFee : 0;
+  });
+
+  // coarse occ x wage grid: eligible/selected, split by dependent status
+  const grid = {};
+  let totalEligibleDepY=0, totalEligibleDepN=0, totalScaledDepY=0, totalScaledDepN=0;
+  let totalSelectedDepY=0, totalSelectedDepN=0;
+  OCC_ORDER.forEach(o=>{
+    grid[o] = {};
+    WAGE_ORDER.forEach(wb=>{
+      const c = CELLS[o][wb];
+      const total = c.filed+c.hollow;
+      const depShareY = (c.depY+c.depN)>0 ? c.depY/(c.depY+c.depN) : 0;
+      const scaledDepY = total*scale*depShareY;
+      const scaledDepN = total*scale*(1-depShareY);
+      let eligY, eligN;
+      if(fee === '100k'){
+        eligY = scaledDepY*(1-DEP_CONSULAR_SHARE);
+        eligN = scaledDepN*(1-NONDEP_CONSULAR_SHARE);
+      } else {
+        eligY = scaledDepY*retentionFrac[wb];
+        eligN = scaledDepN*retentionFrac[wb];
+      }
+      const selY = eligY*selectionFrac[wb];
+      const selN = eligN*selectionFrac[wb];
+      grid[o][wb] = {eligY, eligN, selY, selN};
+      totalScaledDepY += scaledDepY; totalScaledDepN += scaledDepN;
+      totalEligibleDepY += eligY; totalEligibleDepN += eligN;
+      totalSelectedDepY += selY; totalSelectedDepN += selN;
+    });
+  });
+
+  const eligibleTotal = totalEligibleDepY+totalEligibleDepN;
+  const selectedTotal = totalSelectedDepY+totalSelectedDepN;
+  const {median, mean, sum} = weightedMedianMean(fineSelected);
+
+  const pctDependent = selectedTotal>0 ? (totalSelectedDepY/selectedTotal*100) : 0;
+  document.getElementById('statrow').innerHTML = `
+    <div class="stat"><span class="v">${fmt(eligibleTotal)}</span><span class="l">People who applied</span></div>
+    <div class="stat"><span class="v">${fmt(selectedTotal)}</span><span class="l">People picked</span></div>
+    <div class="stat"><span class="v">$${fmt(median)}</span><span class="l">Median salary, picked</span></div>
+    <div class="stat"><span class="v">${fmtMoney(sum)}</span><span class="l">Total salary, picked</span></div>
+    <div class="stat"><span class="v">${pctDependent.toFixed(1)}%</span><span class="l">Picked from H-1B dependent employers</span></div>
   `;
-}
 
-function dotsFor(count){ return Math.round(count/UNIT); }
-
-function dotGroupHTML(n, className, title){
-  const t = title ? ` title="${title}"` : '';
-  let html = '';
-  for(let i=0;i<n;i++) html += `<span class="dot ${className}"${t}></span>`;
-  return html;
-}
-
-function renderChart(){
-  const data = YEARS[currentYear];
-  const grid = document.getElementById('chartGrid');
-  grid.innerHTML = '';
-  grid.appendChild(Object.assign(document.createElement('div'), {className:'corner'}));
-  OCC_ORDER.forEach(occ=>{
+  // dot-grid chart
+  const cgrid = document.getElementById('chartGrid');
+  cgrid.innerHTML = '';
+  cgrid.appendChild(Object.assign(document.createElement('div'), {className:'corner'}));
+  OCC_ORDER.forEach(o=>{
     const h = document.createElement('div');
-    h.className = 'colhead';
-    h.innerHTML = OCC_LABEL[occ];
-    h.style.cursor = 'help';
-    attachTooltip(h, OCC_DETAIL[occ]);
-    grid.appendChild(h);
+    h.className='colhead'; h.innerHTML = OCC_LABEL[o] + ' <span class="qmark">?</span>';
+    attachTooltip(h, OCC_DETAIL[o]);
+    cgrid.appendChild(h);
   });
+  const UNIT = 500;
+  const ordered = (mech === 'topsalary' || mech === 'toplevel');
   WAGE_ORDER.forEach(wb=>{
     const rl = document.createElement('div');
-    rl.className = 'rowlabel';
-    rl.textContent = WAGE_LABEL[wb];
-    grid.appendChild(rl);
-    OCC_ORDER.forEach(occ=>{
-      const c = data.cells[occ][wb];
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      const dotsWrap = document.createElement('div');
-      dotsWrap.className = 'dots';
-      const depYDots = dotsFor(c.depY);
-      const depNDots = dotsFor(c.depN);
-      const hollowDots = dotsFor(c.hollow);
-      let items = [];
+    rl.className='rowlabel'; rl.textContent = WAGE_LABEL[wb];
+    cgrid.appendChild(rl);
+    OCC_ORDER.forEach(o=>{
+      const g = grid[o][wb];
+      const cell = document.createElement('div'); cell.className='cell';
+      const dotsWrap = document.createElement('div'); dotsWrap.className='dots';
+      // total dots depend only on the eligible pool (fee scenario), never on the selection
+      // mechanism — so switching mechanisms never shifts a cell's total dot count, only
+      // how many of those dots are filled vs. hollow.
+      const totalDots = Math.round((g.eligY+g.eligN)/UNIT);
+      const filledDots = Math.min(totalDots, Math.round((g.selY+g.selN)/UNIT));
+      const hollowDots = totalDots - filledDots;
+      const selYDots = Math.min(filledDots, Math.round(g.selY/UNIT));
+      const selNDots = filledDots - selYDots;
+      const items = [];
       if(depOn){
-        for(let i=0;i<depYDots;i++) items.push({cls:'solid-y', title:'H-1B dependent employer'});
-        for(let i=0;i<depNDots;i++) items.push({cls:'solid-n'});
+        for(let i=0;i<selYDots;i++) items.push({cls:'solid-y', title:'H-1B dependent employer'});
+        for(let i=0;i<selNDots;i++) items.push({cls:'solid-n'});
       } else {
-        for(let i=0;i<depYDots+depNDots;i++) items.push({cls:'solid-n'});
+        for(let i=0;i<filledDots;i++) items.push({cls:'solid-n'});
       }
-      for(let i=0;i<hollowDots;i++) items.push({cls:'hollow'});
-      shuffle(items);
-      dotsWrap.innerHTML = items.map(it=>{
-        const t = it.title ? ` title="${it.title}"` : '';
+      const hollowItems = []; for(let i=0;i<hollowDots;i++) hollowItems.push({cls:'hollow'});
+      let allItems;
+      if(ordered){
+        // deterministic mechanisms: fill from top-left across, then down — no shuffling
+        allItems = items.concat(hollowItems);
+      } else {
+        allItems = shuffle(items.concat(hollowItems));
+      }
+      dotsWrap.innerHTML = allItems.map(it=>{
+        const t = it.title?` title="${it.title}"`:'';
         return `<span class="dot ${it.cls}"${t}></span>`;
       }).join('');
       cell.appendChild(dotsWrap);
-      grid.appendChild(cell);
+      cgrid.appendChild(cell);
     });
   });
   document.getElementById('depLegendItem').style.display = depOn ? 'flex' : 'none';
+
+  // fine bar chart
+  const maxVal = Math.max(...fineEligible, 1);
+  const bc = document.getElementById('barchart');
+  bc.innerHTML = '';
+  for(let i=0;i<fineEligible.length;i++){
+    const col = document.createElement('div'); col.className='bar-col'; col.style.position='relative';
+    const elig = document.createElement('div'); elig.className='bar-eligible'; elig.style.height=(fineEligible[i]/maxVal*100)+'%';
+    const sel = document.createElement('div'); sel.className='bar-selected'; sel.style.height=(fineSelected[i]/maxVal*100)+'%';
+    col.title = (i<30?`$${i*10}k–${(i+1)*10}k`:'$300k+')+`: ${fmt(fineEligible[i])} eligible, ${fmt(fineSelected[i])} selected`;
+    col.appendChild(elig); col.appendChild(sel);
+    bc.appendChild(col);
+  }
+  const axis = document.getElementById('axisLabels'); axis.innerHTML='';
+  for(let i=0;i<fineEligible.length;i++){
+    const s = document.createElement('span'); s.textContent = (i%5===0)?'$'+(i*10)+'k':'';
+    axis.appendChild(s);
+  }
+
+  // map: real worksite-state SHARES (from the filed population) rescaled to sum to this
+  // scenario's actual selected dep/non-dep totals — not the entries-based `scale` factor,
+  // since STATE_ALL/STATE_DEP are real geographic shares, not entry counts.
+  const depStateFactor = STATE_DEP_TOTAL>0 ? totalSelectedDepY/STATE_DEP_TOTAL : 0;
+  const nonDepStateFactor = STATE_NONDEP_TOTAL>0 ? totalSelectedDepN/STATE_NONDEP_TOTAL : 0;
+  const stateSelected = {};
+  Object.keys(STATE_ALL).forEach(s=>{
+    const dep = STATE_DEP[s]||0;
+    const nondep = STATE_ALL[s]-dep;
+    stateSelected[s] = dep*depStateFactor + nondep*nonDepStateFactor;
+  });
+  document.getElementById('mapN').textContent = fmt(Object.values(stateSelected).reduce((a,b)=>a+b,0));
+  updateMapColors(stateSelected);
 }
 
 let mapDrawn = false;
-let mapColor;
+let lastStateData = null;
 function drawMapOnce(){
   const svg = d3.select('#map');
-  const path = d3.geoPath(d3.geoAlbersUsa().scale(1050).translate([440, 280]));
+  const path = d3.geoPath(d3.geoAlbersUsa().scale(1050).translate([440,280]));
   d3.json('states-10m.json').then(us=>{
     svg.selectAll('path').data(topojson.feature(us, us.objects.states).features).join('path')
-      .attr('class','state-path')
-      .attr('d', path)
-      .attr('stroke', 'var(--chart-surface)')
-      .attr('stroke-width', 1)
-      .on('mousemove', (event,d)=>{
-        const name = d.properties.name;
-        const postal = Object.keys(FIPS_NAME).find(k=>FIPS_NAME[k]===name);
-        const data = YEARS[currentYear];
-        const v = postal ? (depOn ? (data.stateDep[postal]||0) : (data.stateAll[postal]||0)) : 0;
-        const wrap = document.getElementById('mapwrap').getBoundingClientRect();
-        const tt = document.getElementById('mapTooltip');
-        tt.style.opacity = 1;
-        tt.innerHTML = name + ': <b>' + fmt(v) + '</b>';
-        tt.style.left = (event.clientX - wrap.left + 12) + 'px';
-        tt.style.top = (event.clientY - wrap.top - 26) + 'px';
+      .attr('class','state-path').attr('d',path)
+      .attr('stroke','var(--surface)').attr('stroke-width',1)
+      .on('mousemove',(event,d)=>{
+        const name=d.properties.name;
+        const postal=Object.keys(FIPS_NAME).find(k=>FIPS_NAME[k]===name);
+        const v = (lastStateData && postal) ? (lastStateData[postal]||0) : 0;
+        const wrap=document.getElementById('mapwrap').getBoundingClientRect();
+        const tt=document.getElementById('mapTooltip');
+        tt.style.opacity=1; tt.innerHTML=name+': <b>'+fmt(v)+'</b>';
+        tt.style.left=(event.clientX-wrap.left+12)+'px'; tt.style.top=(event.clientY-wrap.top-26)+'px';
       })
-      .on('mouseleave', ()=>{ document.getElementById('mapTooltip').style.opacity = 0; });
+      .on('mouseleave',()=>{document.getElementById('mapTooltip').style.opacity=0;});
     mapDrawn = true;
-    updateMapColors();
-  }).catch(err=>{
-    document.getElementById('mapModeLabel').textContent = '— map data failed to load: ' + err;
-  });
+    if(lastStateData) updateMapColors(lastStateData);
+  }).catch(err=>{ document.getElementById('mapModeLabel').textContent = '— map failed to load: '+err; });
 }
-
-function updateMapColors(){
+function updateMapColors(stateData){
+  lastStateData = stateData;
   if(!mapDrawn) return;
-  const data = YEARS[currentYear];
-  const src = depOn ? data.stateDep : data.stateAll;
-  const max = Math.max(...Object.values(src));
-  const rampLight = ['#e6f1fb','#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#1c5cab'];
-  const color = d3.scaleQuantize([0, max], rampLight);
-  const emptyFill = '#d4c4a0';
+  const max = Math.max(...Object.values(stateData), 1);
+  const ramp = ['#e6f1fb','#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#1c5cab'];
+  const color = d3.scaleQuantize([0,max], ramp);
   d3.selectAll('.state-path').attr('fill', d=>{
     const postal = Object.keys(FIPS_NAME).find(k=>FIPS_NAME[k]===d.properties.name);
-    const v = postal ? (src[postal]||0) : 0;
-    return v ? color(v) : emptyFill;
+    const v = postal ? (stateData[postal]||0) : 0;
+    return v ? color(v) : '#d4c4a0';
   });
-  document.getElementById('mapModeLabel').innerHTML = depOn ? '— H-1B dependent employers only' : '— all filed petitions';
-  document.getElementById('mapN').textContent = fmt(Object.values(src).reduce((a,b)=>a+b,0));
 }
 
-function renderAll(){
-  renderTabs();
-  renderStats();
-  renderChart();
-  updateMapColors();
-}
-
+document.getElementById('entriesSlider').addEventListener('input', render);
+document.querySelectorAll('input[name=mech]').forEach(el=>el.addEventListener('change', render));
+document.querySelectorAll('input[name=fee]').forEach(el=>el.addEventListener('change', ()=>{
+  document.getElementById('fee103sub').classList.toggle('show', document.querySelector('input[name=fee]:checked').value==='103k');
+  render();
+}));
+document.querySelectorAll('input[name=fee103pct]').forEach(el=>el.addEventListener('change', render));
 document.getElementById('depToggle').addEventListener('click', function(){
   depOn = !depOn;
   this.setAttribute('aria-pressed', depOn);
-  renderChart();
-  updateMapColors();
+  render();
 });
 
-renderAll();
+render();
 drawMapOnce();
 </script>
